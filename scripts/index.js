@@ -44,14 +44,14 @@ const createCard = (index) =>
 
 // Функция удаления карточки
 const removeCard = function (event) {
-  createdCards = createdCards.filter(card => {
+  createdCards = createdCards.filter((card) => {
     const targetName =
-      event.target.parentElement.querySelector('.card__title').textContent;
+      event.target.closest('.card').querySelector('.card__title').textContent;
     const targetLink =
-      event.target.parentElement.querySelector('.card__image').src;
+      event.target.closest('.card').querySelector('.card__image').src;
     return !(card.name === targetName && card.link === targetLink);
   });
-  event.target.parentElement.remove();
+  event.target.closest('.card').remove();
 };
 
 //инициализация карточек при запуске страницы
