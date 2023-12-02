@@ -1,7 +1,7 @@
 let cardAmount = initialCards.length + 1;
 const maxCards = 6; // максимальное число выводимых карточек
 const сardRandomizer = true; // включение перемешивания карточек
-let createdCards = []; // массив номеров выведенных карточек
+let createdCards = []; // массив индексов выведенных карточек
 
 // Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content;
@@ -22,45 +22,53 @@ const putCard = function (initialCard) {
   return cardElement;
 };
 
-//получить номер случайной карточки
-const getRandomCard = function () {
-  let rndCardNumber = Math.floor(Math.random() * (cardAmount - 1)); //случайный номер карточки
-  //проверка на уникальность↓
+//получить номер случайной карточки:
+const getRandomCardIndex = function () {
+  let rndCardIndex = Math.floor(Math.random() * (cardAmount - 1)); //случайный номер карточки
+  //проверка на уникальность ↓
   if (
     createdCards.some(
-      function (cardNumber) {
-        return rndCardNumber === cardNumber;
+      function (cardIndex) {
+        return rndCardIndex === cardIndex;
       }
     )
   ) {
-    rndCardNumber = getRandomCard(); //если уже есть в массиве, то взять другое случайное число
-  } else {
-    createdCards.push(rndCardNumber);
-    console.log(createdCards); //записать в массив уникальных карточек
-  }
+    rndCardIndex = getRandomCardIndex(); //если уже есть в массиве, то взять другое случайное число
+  } 
   //конец проверки на уникальность ↑
-  return rndCardNumber;
+  return rndCardIndex;
 }
 
 // Функция удаления карточки
 const removeCard = function (event) {
   createdCards=createdCards.filter(function (item) {
-      /*удалить!!!*/if (initialCards[item].name===event.target.parentElement.querySelector('.card__title').textContent) {console.log(item);console.log(event.target.parentElement.querySelector('.card__title').textContent);}
       return initialCards[item].name!==event.target.parentElement.querySelector('.card__title').textContent
     });
-  console.log(createdCards);
   event.target.parentElement.remove();
 };
-// Вывести карточки на страницу
-initialCards.forEach(function (initialCard, index){
-  const card=сardRandomizer ? initialCards[getRandomCard()] : initialCard;
+
+// Вывести карточки на страницу^
+for (let i = 0; i < (cardAmount < maxCards ? cardAmount : maxCards); i++) {
+  const index=сardRandomizer? getRandomCardIndex():i;
+  card=initialCards[index];
+  createdCards.push(index);
+  placesList.append(putCard(card));
+}
+/*код ниже тоже рабочий, но длиннее,
+т.к. есть ограничение на количество выведенных карточек в 6 шт.*/
+/*initialCards.forEach(function (initialCard, index){
   if (index < (cardAmount < maxCards ? cardAmount : maxCards)) {
+    let card;
+    if (сardRandomizer) {
+      const indexRandom=getRandomCardIndex();
+      card=initialCards[indexRandom];
+      createdCards.push(indexRandom);
+    }
+    else {
+      card=initialCard;
+      createdCards.push(index);
+    }
     placesList.append(putCard(card));
   }
 });
-
-/*for (let i = 0; i < (cardAmount < maxCards ? cardAmount : maxCards); i++) {
-  initialCard=сardRandomizer ? initialCards[getRandomCard()] : initialCards[i];
-  placesList.append(putCard(initialCard));
-  console.log(placesList);
-}*/
+*/
