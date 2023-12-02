@@ -1,7 +1,7 @@
 let cardAmount = initialCards.length + 1;
 const maxCards = 6; // максимальное число выводимых карточек
 const сardRandomizer = true; // включение перемешивания карточек
-let createdCards = []; // массив индексов выведенных карточек
+let createdCards = []; // массив выведенных на страницу карточек
 
 // Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content;
@@ -9,66 +9,61 @@ const cardTemplate = document.querySelector('#card-template').content;
 // DOM узлы
 const placesList = document.querySelector('.places__list');
 
-// Функция создания карточки
-const putCard = function (initialCard) {
+// Функция размещения карточки
+const putCard = function (card, removeCard) {
   const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
   const cardTitle = cardElement.querySelector('.card__title');
   const cardDeleteButton = cardElement.querySelector('.card__delete-button');
-  cardImage.src = initialCard.link;
-  cardImage.alt = 'фотография с изображением места' + initialCard.name;
-  cardTitle.textContent = initialCard.name;
-  cardDeleteButton.addEventListener('click',removeCard);
+  cardImage.src = card.link;
+  cardImage.alt = 'фотография с изображением места' + card.name;
+  cardTitle.textContent = card.name;
+  cardDeleteButton.addEventListener('click', removeCard);
   return cardElement;
 };
 
-//получить номер случайной карточки:
-const getRandomCardIndex = function () {
-  let rndCardIndex = Math.floor(Math.random() * (cardAmount - 1)); //случайный номер карточки
+//получить уникальную случайную карточку:
+const getRandomCard = function () {
+  let randomCard = initialCards[Math.floor(Math.random() * (cardAmount - 1))]; //случайная карточка
   //проверка на уникальность ↓
   if (
-    createdCards.some(
-      function (cardIndex) {
-        return rndCardIndex === cardIndex;
-      }
-    )
+    createdCards.some(function (card) {
+      return randomCard.name === card.name && randomCard.link === card.link;
+    })
   ) {
-    rndCardIndex = getRandomCardIndex(); //если уже есть в массиве, то взять другое случайное число
-  } 
+    randomCard = getRandomCard(); //если уже есть в массиве, то взять другую случайную карточку
+  }
   //конец проверки на уникальность ↑
-  return rndCardIndex;
-}
+  return randomCard;
+};
+
+// Функция создания карточки
+const createCard = function (index) {
+  const card = сardRandomizer ? getRandomCard() : initialCards[index];
+  return card;
+};
 
 // Функция удаления карточки
 const removeCard = function (event) {
-  createdCards=createdCards.filter(function (item) {
-      return initialCards[item].name!==event.target.parentElement.querySelector('.card__title').textContent
-    });
+  createdCards = createdCards.filter(function (card) {
+    return !(
+      card.name ===
+        event.target.parentElement.querySelector('.card__title').textContent &&
+      card.link === event.target.parentElement.querySelector('.card__image').src
+    );
+  });
   event.target.parentElement.remove();
 };
 
-// Вывести карточки на страницу^
-for (let i = 0; i < (cardAmount < maxCards ? cardAmount : maxCards); i++) {
-  const index=сardRandomizer? getRandomCardIndex():i;
-  card=initialCards[index];
-  createdCards.push(index);
-  placesList.append(putCard(card));
-}
-/*код ниже тоже рабочий, но длиннее,
-т.к. есть ограничение на количество выведенных карточек в 6 шт.*/
-/*initialCards.forEach(function (initialCard, index){
-  if (index < (cardAmount < maxCards ? cardAmount : maxCards)) {
-    let card;
-    if (сardRandomizer) {
-      const indexRandom=getRandomCardIndex();
-      card=initialCards[indexRandom];
-      createdCards.push(indexRandom);
-    }
-    else {
-      card=initialCard;
-      createdCards.push(index);
-    }
-    placesList.append(putCard(card));
+//инициализация карточек при запуске страницы
+const initializeCards = function () {
+  for (let i = 0; i < (cardAmount < maxCards ? cardAmount : maxCards); i++) {
+    createdCards.push(createCard(i)); //внести карточку в массив созданных
   }
-});
-*/
+  /*for нужен для того, что
+    может быть необходимо ограничить сверху количество карточек*/
+};
+initializeCards();
+
+//Вывести карточки на страницу
+createdCards.forEach((card) => placesList.append(putCard(card, removeCard)));
