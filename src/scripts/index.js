@@ -1,3 +1,5 @@
+import initialCards from './cards.js';
+import '../pages/index.css';
 const maxCards = 6; // максимальное число выводимых карточек
 const сardRandomizer = true; // включение перемешивания карточек
 let cardAmount = initialCards.length + 1;

@@ -1,3 +1,4 @@
+const kareliaImage = new URL('../images/Karelia.JPG', import.meta.url);
 const initialCards = [
     {
       name: "Архыз",
@@ -25,6 +26,8 @@ const initialCards = [
     },
     {
       name: "Карелия",
-      link: "../images/Karelia.JPG",
+      link: kareliaImage,
     }
 ];
+
+export default initialCards;
