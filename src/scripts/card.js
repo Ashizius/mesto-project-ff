@@ -1,66 +1,53 @@
-const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
-const cardsList = [];
+
 import { show } from './modal.js';
-
-
+import {cardRules} from './index.js';
 
 // Функция удаления карточки
-const removeCard = function (event) {
-
-  const imageLink = event.target.closest('.card').querySelector('.card__image').src;
-  cardsList.splice(cardsList.find((item) => item.link === imageLink),1);
-  event.target.removeEventListener('click', removeCard);
-  event.target.closest('.card').remove();
+const removeCard = function (evt) {
+  const imageLink = evt.target.closest('.card').querySelector('.card__image').src;
+  cardRules.list.splice(cardRules.list.find((item) => item.link === imageLink),1);
+  evt.target.removeEventListener('click', removeCard);
+  evt.target.closest('.card').remove();
 };
 
-const likeCard = function (event) {
-  //event.target.closest('.card').remove(); поменять класс
+const likeCard = function (evt) {
+  evt.target.classList.toggle('card__like-button_is-active'); //переключение лайка
 };
 // Функция создания элемента карточки
 const createCard = function (card,removeCard,likeCard,showCardHandler) {
-  const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
+  const cardElement = cardRules.cardTemplate.querySelector('.card').cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
   const cardTitle = cardElement.querySelector('.card__title');
   const cardDeleteButton = cardElement.querySelector('.card__delete-button');
-  ////const cardLikeButton = cardElement.querySelector('.card__delete-button');
+  const cardLikeButton = cardElement.querySelector('.card__like-button');
   cardImage.src = card.link;
   cardImage.alt = 'фотография с изображением места ' + card.name;
   cardTitle.textContent = card.name;
   cardImage.addEventListener('click', showCardHandler);
   cardDeleteButton.addEventListener('click', removeCard);
-  ////cardLikeButton.addEventListener('click', likeCard);
+  cardLikeButton.addEventListener('click', likeCard);
   return cardElement;
 };
 //разместить карточки в контейнере
-const putCard = function (container,cardDescription,removeCard,likeCard,showCardHandler) {
-  const cardElement = createCard(cardDescription,removeCard,likeCard,showCardHandler);
-  container.append(cardElement);
-  cardsList.push(cardDescription);
+const putCard = function (cardDescription,removeCard,likeCard,showCardHandler) {
+  cardRules.container.prepend(createCard(cardDescription,removeCard,likeCard,showCardHandler));
+  cardRules.list.push(cardDescription);
 };
 
-const addCard = function (container,cardDescription,removeCard,likeCard,showCardHandler) {
-  const cardElement = createCard(cardDescription,removeCard,likeCard,showCardHandler);
-  container.prepend(cardElement);
-  cardsList.shift(cardDescription);
-};
-
-/*
-const getCardsList = function (container) {
-    return container.querySelectorAll('.card').reduce(prevItem,item => prevItem.push({name:item.querySelector('.card__title').textContent,link:item.querySelector('.card__image').src}),[])
+const imageCopy = function(img1,img2) {
+    img1.src = img2.src;
+    img1.alt = img2.alt;
 }
-*/
 
-const showCardHandler = function (evt) {
-  if (evt.target.classList.contains('card__image')) {
-    const modal = document.querySelector('.popup_type_image');
-    const image = modal.querySelector('.popup__image');
-    image.src = evt.target.src;
-    image.alt = evt.target.alt;
-    show.closeModal=show(modal);
+const showCardHandler = function (evt) { //показ карточки по клику
+  if (evt.target.classList.contains(cardRules.activator)) {
+    if (cardRules.popupImage)
+    imageCopy(cardRules.popupImage, evt.target);
+    show(cardRules.popup);
   }
 };
 
-export {putCard, addCard, removeCard, likeCard, cardsList, showCardHandler};
+export {putCard,createCard,likeCard,removeCard,showCardHandler};
 
 /*
 //получить уникальную случайную карточку:
