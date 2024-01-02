@@ -1,25 +1,47 @@
-
 import { show } from './modal.js';
-import {cardRules} from './index.js';
+import { cardRules } from './index.js';
+/*
+модуль требует на вход две переменных:
+show -- функция, которая выводит изображение в модальное окно, входным параметром функции является DOM элемент модального окна
+cardRules -- объект со следующими свойствами:
+  .activator -- имя класса, вызывающего появление модального окна
+  .popup -- DOM элемент модального окна с изображением
+  .popupImage -- DOM элемент самого изображения внутри модального окна
+  .popupCaption -- DOM элемент имени изображения внутри модального окна
+  .cardTemplate -- темплейт карточки
+  .container -- контейнер карточек
+  .list [] -- список всех выведенных карточек
+*/
 
 // Функция удаления карточки
 const removeCard = function (evt) {
-  const imageLink = evt.target.closest('.card').querySelector('.card__image').src;
-  cardRules.list.splice(cardRules.list.find((item) => item.link === imageLink),1);
+  const imageLink = evt.target
+    .closest('.' + cardRules.card)
+    .querySelector('.' + cardRules.cardImage).src;
+  cardRules.list.splice(
+    cardRules.list.find((item) => item.link === imageLink),
+    1
+  );
   evt.target.removeEventListener('click', removeCard);
-  evt.target.closest('.card').remove();
+  evt.target.closest('.' + cardRules.card).remove();
 };
 
 const likeCard = function (evt) {
   evt.target.classList.toggle('card__like-button_is-active'); //переключение лайка
 };
 // Функция создания элемента карточки
-const createCard = function (card,removeCard,likeCard,showCardHandler) {
-  const cardElement = cardRules.cardTemplate.querySelector('.card').cloneNode(true);
-  const cardImage = cardElement.querySelector('.card__image');
-  const cardTitle = cardElement.querySelector('.card__title');
-  const cardDeleteButton = cardElement.querySelector('.card__delete-button');
-  const cardLikeButton = cardElement.querySelector('.card__like-button');
+const createCard = function (card, removeCard, likeCard, showCardHandler) {
+  const cardElement = cardRules.cardTemplate
+    .querySelector('.' + cardRules.card)
+    .cloneNode(true);
+  const cardImage = cardElement.querySelector('.' + cardRules.cardImage);
+  const cardTitle = cardElement.querySelector('.' + cardRules.cardTitle);
+  const cardDeleteButton = cardElement.querySelector(
+    '.' + cardRules.cardDeleteButton
+  );
+  const cardLikeButton = cardElement.querySelector(
+    '.' + cardRules.cardLikeButton
+  );
   cardImage.src = card.link;
   cardImage.alt = 'фотография с изображением места ' + card.name;
   cardTitle.textContent = card.name;
@@ -29,52 +51,41 @@ const createCard = function (card,removeCard,likeCard,showCardHandler) {
   return cardElement;
 };
 //разместить карточки в контейнере
-const putCard = function (cardDescription,removeCard,likeCard,showCardHandler) {
-  cardRules.container.prepend(createCard(cardDescription,removeCard,likeCard,showCardHandler));
+const putCard = function (
+  cardDescription,
+  createCard,
+  removeCard,
+  likeCard,
+  showCardHandler
+) {
+  cardRules.container.prepend(
+    createCard(cardDescription, removeCard, likeCard, showCardHandler)
+  );
   cardRules.list.push(cardDescription);
 };
+//копирование свойств изображения
+const imageCopy = function (img1, img2) {
+  img1.src = img2.src;
+  img1.alt = img2.alt;
+};
+//копирование jgbcfybz изображения
+const captionCopy = function (elem1, elem2) {
+  elem1.textContent = elem2.textContent;
+};
 
-const imageCopy = function(img1,img2) {
-    img1.src = img2.src;
-    img1.alt = img2.alt;
-}
-
-const showCardHandler = function (evt) { //показ карточки по клику
+//показ карточки по клику
+const showCardHandler = function (evt) {
   if (evt.target.classList.contains(cardRules.activator)) {
-    if (cardRules.popupImage)
     imageCopy(cardRules.popupImage, evt.target);
+    captionCopy(
+      cardRules.popupCaption,
+      evt.target
+        .closest('.' + cardRules.card)
+        .querySelector('.' + cardRules.cardTitle)
+    );
     show(cardRules.popup);
   }
 };
 
-export {putCard,createCard,likeCard,removeCard,showCardHandler};
-
-/*
-//получить уникальную случайную карточку:
-const getRandomCard = function (cardsList,addedCards) {
-  const cardAmount=cardsList.length+1;
-  let randomCard = cardsList[Math.floor(Math.random() * (cardAmount - 1))]; //случайная карточка
-  //проверка на уникальность ↓
-  if (
-    addedCards.some(
-      (card) => randomCard.name === card.name && randomCard.link === card.link
-    )
-  ){
-    randomCard = getRandomCard(); //если уже есть в массиве, то взять другую случайную карточку
-  }
-  //конец проверки на уникальность ↑
-  return randomCard;
-};
-
-// Функция перемешивания карточек
-const shuffleCards = (initialList,cardsLimit,random) =>
-{
-  const newList=[];
-  for (let index=0;index<Math.min(initialList.length,cardsLimit),index++){
-    newList.push(random ? getRandomCard(initialList,newList) : initialList[index]);
-  } //не map по причине ограничения количества карточек
-  return newList;
-}
-*/
-/*
-shuffleCards(initialCards,maxCards);*/
+//экспорт соответствующих функций
+export { putCard, createCard, likeCard, removeCard, showCardHandler };
