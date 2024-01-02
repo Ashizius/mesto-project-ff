@@ -1,12 +1,12 @@
-import { showModalHandler } from './modal.js';
 import { cardRules } from './index.js';
 /*
-модуль требует на вход две переменных:
-show -- функция, которая выводит изображение в модальное окно, входным параметром функции является DOM элемент модального окна
+модуль требует на вход объект:
 cardRules -- объект со следующими свойствами:
+  .classes: -- список классов карточек
   .cardTemplate -- темплейт карточки
   .container -- контейнер карточек
   .list [] -- список всех выведенных карточек
+  .showCardHandler -- функция-хендлер показа карточки
 */
 
 // Функция удаления карточки
@@ -18,7 +18,6 @@ const removeCard = function (evt) {
       cardRules.list.find((item) => item.link === imageLink),
       1
     );
-    console.log(cardRules.list);
     cardElement.removeEventListener('click', removeCard);
     cardElement.removeEventListener('click', cardRules.showCardHandler);
     cardElement.removeEventListener('click', likeCard);

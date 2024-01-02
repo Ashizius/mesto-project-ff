@@ -107,7 +107,7 @@ export const modalRules = {
     closeButton: 'popup__close',
   },
 };
-//объект, задающий модальное окно карточки
+//объект, задающий карточки
 export const cardRules = {
   classes: {
     card: 'card',
@@ -133,7 +133,6 @@ const initializeCards = function (cardsList) {
     }
   });
 };
-
 initializeCards(initialCards);
 
 //обработчики оверлеев
