@@ -19,31 +19,28 @@ const formNewPlace = document.forms['new-place'];
 const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
 const placesList = document.querySelector('.places__list');
 
-import initialCards from './cards.js';
-
-//импорт функций поведения карточек
-import { putCard, createCard, likeCard, removeCard } from './card.js';
-//импорт функции слежения за открытием модального окна
-import { showModalHandler, hideModal } from './modal.js';
-let maxCards = 6; // максимальное начальных карточек
+import initialCards from './cards.js'; //импорт списка карточек
+import { putCard, createCard, likeCard, removeCard } from './card.js'; //импорт функций поведения карточек
+import { showModalHandler, hideModal } from './modal.js'; //импорт функции слежения за открытием модального окна
+let maxCards = 6; // максимальное количество начальных карточек
 let limitcards = true;
 let cardAmount = limitcards ? maxCards : initialCards.length + 1;
+
+//функции сброса и отправки формы редактирования профиля
 const profileSetup = function () {
   formEdit.elements.name.value = profileName.textContent;
   formEdit.elements.description.value = profileDescription.textContent;
 };
-
 const profileSubmit = function (evt) {
   evt.preventDefault();
   profileName.textContent = formEdit.elements.name.value;
   profileDescription.textContent = formEdit.elements.description.value;
   hideModal(popupEdit);
 };
-
+//функции сброса и отправки формы создания карточки
 const placeSetup = function () {
   formNewPlace.reset();
 };
-
 const placeSubmit = function (evt) {
   evt.preventDefault();
   putCard(
@@ -54,11 +51,12 @@ const placeSubmit = function (evt) {
     createCard,
     removeCard,
     likeCard,
-    showCardHandler
+    showCard
   );
   hideModal(popupNewPlace);
   formNewPlace.reset();
 };
+
 //копирование свойств изображения
 const imageCopy = function (img1, img2) {
   img1.src = img2.src;
@@ -67,15 +65,11 @@ const imageCopy = function (img1, img2) {
 //копирование описания изображения
 const textCopy = function (elem1, elem2) {
   elem1.textContent = elem2.textContent;
-  
 };
-
-export const showCardHandler = function (evt) {
-  if (evt.target.classList.contains(cardRules.classes.cardImage)) {
-    textCopy(popupCardCaption, evt.currentTarget.querySelector('.'+cardRules.classes.cardTitle));
-    imageCopy(popupCardImage, evt.target);
-  }
-  else {return;}
+//функция показа карточки в элементе с текстовым блоком и изображением
+export const showCard = function (cardCaption, cardImage) {
+  textCopy(popupCardCaption, cardCaption);
+  imageCopy(popupCardImage, cardImage);
 };
 
 //объект, задающий модальные окна
@@ -120,16 +114,15 @@ export const cardRules = {
   cardTemplate: cardTemplate,
   container: placesList,
   list: [], //хранение списка выведенных карточек
-  showCardHandler: showCardHandler
 };
 
 //Вывести карточки на страницу
 const initializeCards = function (cardsList) {
   //вывод карточек в контейнер
   cardsList.forEach((card, index) => {
-    if (index < maxCards) {
+    if (index < cardAmount) {
       //лимит в 6 карточек
-      putCard(card, createCard, removeCard, likeCard, showCardHandler);
+      putCard(card, createCard, removeCard, likeCard, showCard);
     }
   });
 };
@@ -145,4 +138,3 @@ modalRules.list.forEach((item) => {
     item.form.addEventListener('submit', item.submit);
   }
 });
-

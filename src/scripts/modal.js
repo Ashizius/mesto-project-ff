@@ -25,7 +25,7 @@ const getModal = function (element) {
       element.classList.contains(item.activator) || element === item.popup
   );
 };
-
+//функция получает текущее открытое модальноеокно
 const getActiveModal = function () {
   return modalRules.list.find(
     (item) =>
@@ -73,7 +73,6 @@ const showModal = function (popup) {
 // функция, вызываемая для отображения модального окна и проверяющая, на правильное ли окно пришёл ивент
 const showModalHandler = function (evt) {
   const modalRule = getModal(evt.target); // поиск окна по классу кнопки
-  //if (modalRule && !(document.querySelector('.' + modalRules.classes.activated))) {
   if (modalRule && !(getActiveModal())) {//если найдено окно и нет уже открытого
     showModal(modalRule.popup);
   }
