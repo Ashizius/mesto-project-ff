@@ -27,7 +27,7 @@ const stopFormListening = function (formObject, handleClose) {
   if (formObject.form) {
     formObject.form.removeEventListener('submit', formObject.submit);
     formObject.form.removeEventListener('submit', handleClose);
-    formObject.setup();    
+    formObject.setup();
   }
 };
 

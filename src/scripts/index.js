@@ -27,7 +27,7 @@ import {
   stopFormListening,
   startFormListening,
 } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
-import {modalClasses} from './constants.js'; //импорт классов модальных окон
+import { modalClasses } from './constants.js'; //импорт классов модальных окон
 
 //функции сброса и отправки формы редактирования профиля
 const setupProfile = function () {
@@ -110,7 +110,7 @@ const putCard = function (
   container.prepend(create(card, template, remove, like, show));
 };
 
-  //вывод карточек из массива
+//вывод карточек из массива
 const initializeCards = function (
   cardsList,
   template,
@@ -147,8 +147,10 @@ const getModal = function (element) {
 //слушатели действий с модальным окном
 const handleModal = function (evt) {
   const modalRule = getModal(evt.target); // поиск окна по классу кнопки
-  if (modalRule) { //если найдено окно
-    const handleHide = function (evt) { //создание функции для слушателя закрытия модального окна
+  if (modalRule) {
+    //если найдено окно
+    const handleHide = function (evt) {
+      //создание функции для слушателя закрытия модального окна
       if (
         (evt.type === 'click' &&
           (evt.target.classList.contains(modalClasses.general) ||
