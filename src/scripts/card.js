@@ -38,7 +38,7 @@ const createCard = function (
       likeCard(cardLikeButton);
     } else if (classList.contains(cardClasses.cardDeleteButton)) {
       cardElement.removeEventListener('click', handleCardClick);
-      removeCard(cardElement, cardImage);
+      removeCard(cardElement);
     }
   };
   cardElement.addEventListener('click', handleCardClick);

@@ -21,12 +21,7 @@ const placesList = document.querySelector('.places__list');
 
 import initialCards from './cards.js'; //импорт списка карточек
 import { createCard, likeCard, removeCard } from './card.js'; //импорт функций поведения карточек
-import {
-  showModal,
-  hideModal,
-  stopFormListening,
-  startFormListening,
-} from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
+import { showModal, hideModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
 import { modalClasses } from './constants.js'; //импорт классов модальных окон
 
 //функции сброса и отправки формы редактирования профиля
@@ -38,6 +33,7 @@ const submitProfile = function (evt) {
   evt.preventDefault();
   profileName.textContent = formEdit.elements.name.value;
   profileDescription.textContent = formEdit.elements.description.value;
+  hideModal(popupEdit, handleHide);
 };
 //функции сброса и отправки формы создания карточки
 const setupPlace = function () {
@@ -57,6 +53,7 @@ const submitPlace = function (evt) {
     likeCard,
     showCard
   );
+  hideModal(popupNewPlace, handleHide);
   formNewPlace.reset();
 };
 
@@ -144,28 +141,47 @@ const getModal = function (element) {
   );
 };
 
+//функция, которая ищет среди модальных окон открытое
+const getActiveModal = function () {
+  return modalRules.find((item) =>
+    item.popup.classList.contains(modalClasses.activated)
+  );
+};
+
+//функция для слушателя закрытия модального окна
+const handleHide = function (evt) {
+  if (
+    (evt.type === 'click' &&
+      (evt.target.classList.contains(modalClasses.general) ||
+        evt.target.classList.contains(modalClasses.closeButton))) ||
+    evt.key === 'Escape'
+  ) {
+    const modalRule = getActiveModal();
+    if (modalRule.form) {
+      modalRule.setup(); //сброс значений формы до тредуемых при закрытии модального окна
+    }
+    if (modalRule) {
+      hideModal(modalRule.popup, handleHide);
+    }
+  }
+};
+
 //слушатели действий с модальным окном
 const handleModal = function (evt) {
   const modalRule = getModal(evt.target); // поиск окна по классу кнопки
-  if (modalRule) {
-    //если найдено окно
-    const handleHide = function (evt) {
-      //создание функции для слушателя закрытия модального окна
-      if (
-        (evt.type === 'click' &&
-          (evt.target.classList.contains(modalClasses.general) ||
-            evt.target.classList.contains(modalClasses.closeButton))) ||
-        evt.key === 'Escape' ||
-        evt.type === 'submit'
-      ) {
-        hideModal(modalRule.popup, handleHide);
-        stopFormListening(modalRule, handleHide); //убрал в отдельную функцию, чтобы не увеличивать вложенность
-      }
-    };
-    startFormListening(modalRule, handleHide); //слушатель сабмита и закрытия модального окна
+  if (modalRule && !getActiveModal()) {
+    //если найдено окно и нет ещё активного
     showModal(modalRule.popup, handleHide);
   }
 };
 
 //обработчики оверлеев
 document.addEventListener('click', handleModal); //сразу на весь документ, чтобы уменьшить количество слушателей событий
+
+//навесить слушатель сабмита на все формы
+modalRules.forEach((item) => {
+  if (item.form) {
+    item.setup();
+    item.form.addEventListener('submit', item.submit);
+  }
+});

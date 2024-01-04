@@ -1,13 +1,13 @@
 import { modalClasses } from './constants.js';
 
-//функция закрытия модального окна
+//функция закрытия модального окна, принимает на вход DOM-элемент модального окна и обработчик закрытия
 const hideModal = function (popup, handleClose) {
   popup.classList.remove(modalClasses.activated);
   document.removeEventListener('click', handleClose);
   document.removeEventListener('keydown', handleClose);
 };
 
-//функция отображения модального окна, принимает на вход DOM-элемент модального окна
+//функция отображения модального окна, принимает на вход DOM-элемент модального окна и обработчик закрытия
 const showModal = function (popup, handleClose) {
   if (!popup.classList.contains(modalClasses.animated)) {
     setTimeout(() => {
@@ -23,23 +23,5 @@ const showModal = function (popup, handleClose) {
   document.addEventListener('keydown', handleClose);
 };
 
-const stopFormListening = function (formObject, handleClose) {
-  if (formObject.form) {
-    formObject.form.removeEventListener('submit', formObject.submit);
-    formObject.form.removeEventListener('submit', handleClose);
-    formObject.setup();
-  }
-};
-
-const startFormListening = function (formObject, handleClose) {
-  if (formObject.form) {
-    formObject.setup();
-    formObject.form.addEventListener('submit', formObject.submit);
-    formObject.form.addEventListener('submit', handleClose);
-  }
-};
-
-// функция, вызываемая для отображения модального окна и проверяющая, на правильное ли окно пришёл ивент
-
 //экспорт соответствующих функций
-export { showModal, hideModal, stopFormListening, startFormListening };
+export { showModal, hideModal };
