@@ -14,3 +14,13 @@ export const cardClasses = {
   cardLikeButton: 'card__like-button',
   cardLiked: 'card__like-button_is-active',
 };
+//объект настроек форм
+export const formSettings = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible',
+  getError: function (formElement, inputElement) {return `.${formElement.getAttribute('name')}__${inputElement.name}--error`}
+}

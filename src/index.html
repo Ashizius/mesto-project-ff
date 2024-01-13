@@ -10,7 +10,7 @@
 <body class="page">
 <div class="page__content">
   <header class="header page__section">
-    <img src="<%=require('./images/logo.svg')%>" alt="Логотип проекта масто" class="logo header__logo">
+    <img src="<%=require('./images/logo.svg')%>" alt="Логотип проекта место" class="logo header__logo">
   </header>
   <main class="content">
     <section class="profile page__section">
@@ -37,8 +37,27 @@
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Редактировать профиль</h3>
       <form class="popup__form" name="edit-profile">
-        <input type="text" name="name" class="popup__input popup__input_type_name" placeholder="Имя" required>
-        <input type="text" name="description" class="popup__input popup__input_type_description" placeholder="Занятие" required>
+        <formfield class="popup__formfield">
+          <input type="text" name="name" class="popup__input popup__input_type_name" placeholder="Имя" required minlength="2" maxlength="40" pattern="^[a-zа-яёA-ZА-ЯЁ\- ]+$" data-pattern-error="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
+          <span class="popup__error edit-profile__name--error"></span>
+        </formfield>
+        <formfield class="popup__formfield">
+          <input id="popup__input_type_description" type="text" name="description" class="popup__input popup__input_type_description" placeholder="Занятие" required  minlength="2" maxlength="200" pattern="^[a-zа-яёA-ZА-ЯЁ\- ]+$" data-pattern-error="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
+          <span class="popup__error edit-profile__description--error"></span>
+        </formfield>
+        <button type="submit" class="button popup__button">Сохранить</button>
+      </form>
+    </div>
+  </div>
+  <div class="popup popup_type_avatar">
+    <div class="popup__content">
+      <button type="button" class="popup__close"></button>
+      <h3 class="popup__title">Обновить аватар</h3>
+      <form class="popup__form" name="edit-avatar">
+        <formfield class="popup__formfield"> 
+          <input type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
+          <span class="popup__error edit-avatar__link--error"></span>
+        </formfield>
         <button type="submit" class="button popup__button">Сохранить</button>
       </form>
     </div>
@@ -48,9 +67,24 @@
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Новое место</h3>
       <form class="popup__form" name="new-place">
-        <input type="text" name="place-name" class="popup__input popup__input_type_card-name" placeholder="Название" required>
-        <input type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
+        <formfield class="popup__formfield">
+          <input type="text" name="place-name" class="popup__input popup__input_type_card-name" placeholder="Название" required pattern="^[a-zа-яёA-ZА-ЯЁ\- ]+$" data-pattern-error="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
+          <span class="popup__error new-place__place-name--error"></span>
+        </formfield>
+        <formfield> 
+          <input type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
+          <span class="popup__error new-place__link--error"></span>
+        </formfield>
         <button type="submit" class="button popup__button">Сохранить</button>
+      </form>
+    </div>
+  </div>
+  <div class="popup popup_type_delete-card">
+    <div class="popup__content popup__content_smaller">
+      <button type="button" class="popup__close"></button>
+      <h3 class="popup__title">Вы уверены?</h3>
+      <form class="popup__form" name="delete-card">
+        <button type="submit" class="button popup__button">Да</button>
       </form>
     </div>
   </div>
@@ -70,7 +104,10 @@
     <div class="card__description">
       <h2 class="card__title">
       </h2>
-      <button type="button" class="card__like-button"></button>
+      <div class="card__like">
+        <button type="button" class="card__like-button"></button>
+        <span class="card__like-counter">0</span>
+      </div>
     </div>
   </li>
 </template>

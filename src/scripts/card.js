@@ -1,8 +1,9 @@
 import { cardClasses } from './constants.js';
 
 // Функция удаления карточки
-const removeCard = function (cardElement) {
+const deleteCard = function (cardElement,handler) {
   cardElement.remove();
+  cardElement.removeEventListener('click', handler);
 };
 
 //функция лайка карточки
@@ -23,6 +24,9 @@ const createCard = function (
     .cloneNode(true);
   const cardImage = cardElement.querySelector('.' + cardClasses.cardImage);
   const cardTitle = cardElement.querySelector('.' + cardClasses.cardTitle);
+  if (removeCard===null) {
+    cardElement.querySelector('.' + cardClasses.cardDeleteButton).remove();
+  }
   const cardLikeButton = cardElement.querySelector(
     '.' + cardClasses.cardLikeButton
   );
@@ -36,9 +40,8 @@ const createCard = function (
       showCard(cardTitle, cardImage);
     } else if (classList.contains(cardClasses.cardLikeButton)) {
       likeCard(cardLikeButton);
-    } else if (classList.contains(cardClasses.cardDeleteButton)) {
-      cardElement.removeEventListener('click', handleCardClick);
-      removeCard(cardElement);
+    } else if (classList.contains(cardClasses.cardDeleteButton)&&removeCard) {
+      removeCard(cardElement,deleteCard,handleCardClick);
     }
   };
   cardElement.addEventListener('click', handleCardClick);
@@ -46,4 +49,4 @@ const createCard = function (
 };
 
 //экспорт соответствующих функций
-export { createCard, likeCard, removeCard };
+export { createCard, likeCard };
