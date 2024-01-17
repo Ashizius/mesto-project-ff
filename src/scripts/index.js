@@ -25,22 +25,28 @@ const formAvatar = document.forms['edit-avatar'];
 const formDeleteCard = document.forms['delete-card'];
 const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
 const placesList = document.querySelector('.places__list');
+const findSubmitButton = (form) => form.querySelector(formSettings.submitButtonSelector);
+const formEditButton = findSubmitButton(formEdit);
+const formNewPlaceButton = findSubmitButton(formNewPlace);
+const formAvatarButton = findSubmitButton(formAvatar);
+const formDeleteCardButton = findSubmitButton(formDeleteCard);
 
-import initialCards from './cards.js'; //импорт списка карточек
-import { createCard, likeCard } from './card.js'; //импорт функций поведения карточек
+
+import { createCard } from './card.js'; //импорт функций поведения карточек
 import { showModal, hideModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
-import { modalClasses, formSettings } from './constants.js'; //импорт классов модальных окон
+import { cardClasses, modalClasses, formSettings } from './constants.js'; //импорт классов модальных окон
 import { clearValidation, enableValidation, setFormValid } from './validation.js'; //импорт классов модальных окон
-/*import { getInitialCards } from './api.js';
-const initialCards=getInitialCards()
-  .then((result) => {
-    return result;
-  })
-  .catch((err) => {
-    console.log(err); // выводим ошибку в консоль
-  }); 
-*/
+import { getInitialCards, getProfileInfo, requestLikeCard, requestUnlikeCard, requestUpdateProfile, requestUpdateAvatar, requestPutCard, requestRemoveCard, toggleLoadingVisualisation } from './api.js';
+
+let profileInfo;
+let markedCard; //помеченная карта под удаление
+
 //функции сброса и отправки формы редактирования профиля
+const setupProfileInfo =function (info) {
+  profileName.textContent = info.name;
+  profileDescription.textContent = info.about;
+  profileAvatar.style.backgroundImage = `url("${info.avatar}")`;
+}
 const setupProfile = function () {
   formEdit.elements.name.value = profileName.textContent;
   formEdit.elements.description.value = profileDescription.textContent;
@@ -48,9 +54,15 @@ const setupProfile = function () {
 };
 const submitProfile = function (evt) {
   evt.preventDefault();
-  profileName.textContent = formEdit.elements.name.value;
-  profileDescription.textContent = formEdit.elements.description.value;
-  hideModal(popupEdit, handleHide);
+  const initialText=toggleLoadingVisualisation(formEditButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));
+  requestUpdateProfile({name: formEdit.elements.name.value, about:formEdit.elements.description.value})
+    .then(profile=>{
+      profileName.textContent=profile.name;
+      profileDescription.textContent=profile.about;
+      hideModal(popupEdit, handleHide);
+    })
+    .catch(error=>console.log(error))
+    .finally(()=>toggleLoadingVisualisation(formEditButton,initialText,formSettings.inactiveButtonClass.substring(1)))
 };
 //функции сброса и отправки формы редактирования аватара
 const setupAvatar = function () {
@@ -59,8 +71,15 @@ const setupAvatar = function () {
 };
 const submitAvatar = function (evt) {
   evt.preventDefault();
-  profileAvatar.style.backgroundImage = `url("${formAvatar.elements.link.value}")`;
+  const initialText=toggleLoadingVisualisation(formAvatarButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));  
+  requestUpdateAvatar({avatar:formAvatar.elements.link.value})
+    .then(ava=>{
+        profileAvatar.style.backgroundImage = `url("${formAvatar.elements.link.value}")`;
   hideModal(popupAvatar, handleHide);
+    })
+    .catch(err=>console.log(err))
+    .finally(()=>toggleLoadingVisualisation(formAvatarButton,initialText,formSettings.inactiveButtonClass.substring(1)))
+
 };
 //функции сброса и отправки формы создания карточки
 const setupPlace = function () {
@@ -69,70 +88,75 @@ const setupPlace = function () {
 };
 const submitPlace = function (evt) {
   evt.preventDefault();
-  putCard(
-    {
-      name: formNewPlace.elements['place-name'].value,
-      link: formNewPlace.elements['link'].value,
-    },
-    cardTemplate,
-    placesList,
-    createCard,
-    removeCard,
-    likeCard,
-    showCard
-  );
-  hideModal(popupNewPlace, handleHide);
-  clearValidation(formNewPlace, formSettings);
-  formNewPlace.reset();
+  const initialText=toggleLoadingVisualisation(formNewPlaceButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));  
+  requestPutCard({
+    name: formNewPlace.elements['place-name'].value,
+    link: formNewPlace.elements['link'].value,
+  })
+    .then(card=>{
+      putCard(card,cardTemplate,placesList,createCard,removeCard,likeCard,showCard,profileInfo);
+      hideModal(popupNewPlace, handleHide);
+      clearValidation(formNewPlace, formSettings);
+      formNewPlace.reset();
+    })
+  .catch(err=>{console.log(err)})
+  .finally(()=>toggleLoadingVisualisation(formNewPlaceButton,initialText,formSettings.inactiveButtonClass.substring(1)))
 };
 
-let markedCard;
-
-// Функция удаления карточки
-/*const removeCard = new Promise(function (resolve, reject) {
-
-    if (rand) {
-        resolve();
-    } else {
-        reject('закрытие окна');
+//функция лайка карточки
+const likeCard = function (cardLikeButton, cardLikeCounter, card, userId) {
+  if (!userId) {
+    cardLikeCounter.textContent=card.likes.length;
+     return} //вывести количество лайков
+  toggleLoadingVisualisation(cardLikeCounter,'⌛️',null);  
+  if (!cardLikeButton.classList.contains(cardClasses.cardLiked)) {
+    requestLikeCard(card._id)
+    .then(receivedCard=>{
+    if (receivedCard.likes.some((like) => like._id === userId)) {
+      cardLikeButton.classList.add(cardClasses.cardLiked);
     }
-});*/
-
-
-/*const removeCard = function (cardElement) {
-  if (true) {
-    cardElement.remove();
-    return 0
+    cardLikeCounter.textContent=receivedCard.likes.length;
+  })
+  .catch(err=>{
+    console.log(err);
+    cardLikeCounter.textContent='?';
+  })
   }
   else {
-    return 1
+  requestUnlikeCard(card._id)
+  .then(receivedCard=>{
+    if (!receivedCard.likes.some((like) => like._id === userId)) {
+      cardLikeButton.classList.remove(cardClasses.cardLiked);
+    }
+    cardLikeCounter.textContent=receivedCard.likes.length;
+  })
+  .catch(err=>{
+    console.log(err);
+    cardLikeCounter.textContent='?';
+  })
   }
 };
-*/
-//функции отправки формы удаления карточки
-/*const removeCard = function (card,remove,handle) {
-  const handleRemove=(evt) =>{
-    evt.preventDefault();
-    remove(card,handle);
-    hideModal(popupDeleteCard, handleHide);
-    formDeleteCard.removeEventListener('submit',handleRemove);    
-  }
-  formDeleteCard.addEventListener('submit',handleRemove);
-}
-*/
-const removeCard = function (card,remove,handle) {
+
+const removeCard = function (cardElement,remove,handle,card) {
   markedCard={};
-  markedCard.card=card;
+  markedCard.cardElement=cardElement;
   markedCard.remove=remove;
   markedCard.handle=handle;
+  markedCard.card=card;
 }
 
 const submitDeleteCard = (evt) => {
   evt.preventDefault();
+  const initialText=toggleLoadingVisualisation(formDeleteCardButton,formSettings.removingMessage,formSettings.inactiveButtonClass.substring(1));  
   if (markedCard) {
-    markedCard.remove(markedCard.card,markedCard.handle);
-    hideModal(popupDeleteCard, handleHide);
-    markedCard=null;
+    requestRemoveCard(markedCard.card)
+    .then(()=>{
+      markedCard.remove(markedCard.cardElement,markedCard.handle);
+      hideModal(popupDeleteCard, handleHide);
+      markedCard=null;
+    })
+    .catch(error=>console.log(error))
+    .finally(()=>toggleLoadingVisualisation(formDeleteCardButton,initialText,formSettings.inactiveButtonClass.substring(1)))
   }
 }
 
@@ -163,7 +187,7 @@ const modalRules = [
     activator: 'card__delete-button',
     popup: popupDeleteCard,
     form: formDeleteCard,
-    setup: ()=>{markedCard=null;},
+    setup: ()=>{markedCard=undefined;},
     submit: submitDeleteCard,
   },
   {
@@ -195,9 +219,10 @@ const putCard = function (
   create,
   remove,
   like,
-  show
+  show,
+  owner
 ) {
-  container.prepend(create(card, template, remove, like, show));
+  container.prepend(create(card, template, remove, like, show,owner));
 };
 
 //вывод карточек из массива
@@ -208,23 +233,14 @@ const initializeCards = function (
   create,
   remove,
   like,
-  show
+  show,
+  owner
 ) {
   cardsList.forEach((card) => {
-    putCard(card, template, container, create, remove, like, show);
+    putCard(card, template, container, create, remove, like, show, owner);
   });
 };
 
-//вызов функции вывода карточек на странице
-initializeCards(
-  initialCards,
-  cardTemplate,
-  placesList,
-  createCard,
-  removeCard,
-  likeCard,
-  showCard
-);
 
 //функция, которая получает модальное окно с правилами взаимодействия по классу вызывающего его элемента
 const getModal = function (element) {
@@ -268,15 +284,91 @@ const handleModal = function (evt) {
   }
 };
 
-//обработчики оверлеев
-document.addEventListener('click', handleModal); //сразу на весь документ, чтобы уменьшить количество слушателей событий
+const initializePage = function() {
+  Promise.all([getInitialCards(),getProfileInfo()])
+  .then((results) => {
+    const initialCards = results[0];
+    profileInfo = results[1];
+    setupProfileInfo(profileInfo);
+    initializeCards(initialCards,
+      cardTemplate,
+      placesList,
+      createCard,
+      removeCard,
+      likeCard,
+      showCard,
+      profileInfo);
+      //обработчики оверлеев
+    document.addEventListener('click', handleModal); //сразу на весь документ, чтобы уменьшить количество слушателей событий
+      //навесить слушатель сабмита на все формы
+    modalRules.forEach((item) => {
+      if (item.form) {
+        item.setup();
+        item.form.addEventListener('submit', item.submit);
+      }
+  });
+    enableValidation(formSettings); 
+  })
+  .catch((errors) => {
+    console.log(errors); // выводим ошибку в консоль
+  })
+}
+initializePage();
 
-//навесить слушатель сабмита на все формы
-modalRules.forEach((item) => {
-  if (item.form) {
-    item.setup();
-    item.form.addEventListener('submit', item.submit);
-  }
-});
 
-enableValidation(formSettings); 
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+function updateQuote() {
+  return fetch('https://api.kanye.rest/')
+    .then(res => {
+      if (res.ok) {
+        return res.json();
+      }
+
+      // если ошибка, отклоняем промис
+      return Promise.reject(`Ошибка: ${res.status}`);
+    });
+}
+
+function search() {
+  return fetch(`https://swapi.nomoreparties.co/people/2`)
+  .then(res => {
+    if (res.ok) {
+      return res.json();
+    }
+
+    // если ошибка, отклоняем промис
+    return Promise.reject(`Ошибка: ${res.status}`);
+  })
+}
+
+Promise.all([updateQuote(),search()])
+.then(results => {
+  console.log(results)
+})
+.catch(errors => {
+  console.log(errors)
+})
+/*
+updateQuote()
+.then(json=>console.log(json))
+.catch(err=>console.log(err))
+
+search()
+.then(json=>console.log(json))
+.catch(err=>console.log(err))
+/*    .then((data) => {
+      quoteElement.textContent = data.quote;
+    });*/

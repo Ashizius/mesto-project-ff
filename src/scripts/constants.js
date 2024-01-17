@@ -13,6 +13,7 @@ export const cardClasses = {
   cardDeleteButton: 'card__delete-button',
   cardLikeButton: 'card__like-button',
   cardLiked: 'card__like-button_is-active',
+  cardCounter: 'card__like-counter'
 };
 //объект настроек форм
 export const formSettings = {
@@ -22,5 +23,7 @@ export const formSettings = {
   inactiveButtonClass: 'popup__button_disabled',
   inputErrorClass: 'popup__input_type_error',
   errorClass: 'popup__error_visible',
+  savingMessage: 'Сохранение...',
+  removingMessage: 'Удаление...',
   getError: function (formElement, inputElement) {return `.${formElement.getAttribute('name')}__${inputElement.name}--error`}
 }

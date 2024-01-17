@@ -33,7 +33,7 @@ const setErrorMessage = (input, message) => {
   input.setCustomValidity(message);
 }
 
-export const isValidInput = (form, input) => {
+const isValidInput = (form, input) => {
   if (input.validity.patternMismatch) {
     if (input.dataset.patternError) {
       setErrorMessage(input, input.dataset.patternError);
@@ -82,7 +82,6 @@ const setFormListeners = (form, classes) => {
     }
   });
 }
-
 
 export const enableValidation = (formClasses) => {
   const formsArray=Array.from(document.querySelectorAll(formClasses.formSelector));

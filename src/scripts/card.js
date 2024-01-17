@@ -6,47 +6,48 @@ const deleteCard = function (cardElement,handler) {
   cardElement.removeEventListener('click', handler);
 };
 
-//функция лайка карточки
-const likeCard = function (cardLikeButton) {
-  cardLikeButton.classList.toggle(cardClasses.cardLiked); //переключение лайка
-};
-
 // Функция создания элемента карточки
-const createCard = function (
+export const createCard = function (
   card,
   cardTemplate,
   removeCard,
   likeCard,
-  showCard
+  showCard,
+  currentUser
 ) {
   const cardElement = cardTemplate
     .querySelector('.' + cardClasses.card)
     .cloneNode(true);
   const cardImage = cardElement.querySelector('.' + cardClasses.cardImage);
   const cardTitle = cardElement.querySelector('.' + cardClasses.cardTitle);
-  if (removeCard===null) {
-    cardElement.querySelector('.' + cardClasses.cardDeleteButton).remove();
-  }
+  const cardTrash = cardElement.querySelector('.' + cardClasses.cardDeleteButton);
   const cardLikeButton = cardElement.querySelector(
     '.' + cardClasses.cardLikeButton
   );
+  const cardCounter = cardElement.querySelector('.' + cardClasses.cardCounter);
   cardImage.src = card.link;
   cardImage.alt = 'фотография с изображением места ' + card.name;
   cardTitle.textContent = card.name;
+  if (card.owner._id!==currentUser._id) {
+    cardTrash.remove();
+  }
+  if (card.likes.some((like) => like._id === currentUser._id)) {
+    cardLikeButton.classList.add(cardClasses.cardLiked);
+  }
+  likeCard(cardLikeButton,cardCounter,card,null);
+  
   //обработчик клика по карточке, уникальный для каждой карточки:
   const handleCardClick = function (evt) {
     const classList = evt.target.classList;
     if (classList.contains(cardClasses.cardImage)) {
       showCard(cardTitle, cardImage);
     } else if (classList.contains(cardClasses.cardLikeButton)) {
-      likeCard(cardLikeButton);
-    } else if (classList.contains(cardClasses.cardDeleteButton)&&removeCard) {
-      removeCard(cardElement,deleteCard,handleCardClick);
+      likeCard(cardLikeButton,cardCounter,card,currentUser._id);
+    } else if (classList.contains(cardClasses.cardDeleteButton)) {
+      removeCard(cardElement,deleteCard,handleCardClick,card);
     }
   };
   cardElement.addEventListener('click', handleCardClick);
   return cardElement;
 };
 
-//экспорт соответствующих функций
-export { createCard, likeCard };
