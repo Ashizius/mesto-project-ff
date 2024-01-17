@@ -4,6 +4,8 @@ export const modalClasses = {
   animated: 'popup_is-animated',
   activated: 'popup_is-opened',
   closeButton: 'popup__close',
+  savingMessage: 'Сохранение...',
+  removingMessage: 'Удаление...',
 };
 //объект, задающий классы карточек
 export const cardClasses = {
@@ -22,8 +24,5 @@ export const formSettings = {
   submitButtonSelector: '.popup__button',
   inactiveButtonClass: 'popup__button_disabled',
   inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible',
-  savingMessage: 'Сохранение...',
-  removingMessage: 'Удаление...',
-  getError: function (formElement, inputElement) {return `.${formElement.getAttribute('name')}__${inputElement.name}--error`}
+  errorClass: 'popup__error_visible'
 }

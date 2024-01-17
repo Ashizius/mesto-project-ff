@@ -54,7 +54,7 @@ const setupProfile = function () {
 };
 const submitProfile = function (evt) {
   evt.preventDefault();
-  const initialText=toggleLoadingVisualisation(formEditButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));
+  const initialText=toggleLoadingVisualisation(formEditButton,modalClasses.savingMessage,formSettings.inactiveButtonClass.substring(1));
   requestUpdateProfile({name: formEdit.elements.name.value, about:formEdit.elements.description.value})
     .then(profile=>{
       profileName.textContent=profile.name;
@@ -71,7 +71,7 @@ const setupAvatar = function () {
 };
 const submitAvatar = function (evt) {
   evt.preventDefault();
-  const initialText=toggleLoadingVisualisation(formAvatarButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));  
+  const initialText=toggleLoadingVisualisation(formAvatarButton,modalClasses.savingMessage,formSettings.inactiveButtonClass.substring(1));  
   requestUpdateAvatar({avatar:formAvatar.elements.link.value})
     .then(ava=>{
         profileAvatar.style.backgroundImage = `url("${formAvatar.elements.link.value}")`;
@@ -88,7 +88,7 @@ const setupPlace = function () {
 };
 const submitPlace = function (evt) {
   evt.preventDefault();
-  const initialText=toggleLoadingVisualisation(formNewPlaceButton,formSettings.savingMessage,formSettings.inactiveButtonClass.substring(1));  
+  const initialText=toggleLoadingVisualisation(formNewPlaceButton,modalClasses.savingMessage,formSettings.inactiveButtonClass.substring(1));  
   requestPutCard({
     name: formNewPlace.elements['place-name'].value,
     link: formNewPlace.elements['link'].value,
@@ -147,7 +147,7 @@ const removeCard = function (cardElement,remove,handle,card) {
 
 const submitDeleteCard = (evt) => {
   evt.preventDefault();
-  const initialText=toggleLoadingVisualisation(formDeleteCardButton,formSettings.removingMessage,formSettings.inactiveButtonClass.substring(1));  
+  const initialText=toggleLoadingVisualisation(formDeleteCardButton,modalClasses.removingMessage,formSettings.inactiveButtonClass.substring(1));  
   if (markedCard) {
     requestRemoveCard(markedCard.card)
     .then(()=>{
@@ -315,60 +315,3 @@ const initializePage = function() {
 }
 initializePage();
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-function updateQuote() {
-  return fetch('https://api.kanye.rest/')
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      // если ошибка, отклоняем промис
-      return Promise.reject(`Ошибка: ${res.status}`);
-    });
-}
-
-function search() {
-  return fetch(`https://swapi.nomoreparties.co/people/2`)
-  .then(res => {
-    if (res.ok) {
-      return res.json();
-    }
-
-    // если ошибка, отклоняем промис
-    return Promise.reject(`Ошибка: ${res.status}`);
-  })
-}
-
-Promise.all([updateQuote(),search()])
-.then(results => {
-  console.log(results)
-})
-.catch(errors => {
-  console.log(errors)
-})
-/*
-updateQuote()
-.then(json=>console.log(json))
-.catch(err=>console.log(err))
-
-search()
-.then(json=>console.log(json))
-.catch(err=>console.log(err))
-/*    .then((data) => {
-      quoteElement.textContent = data.quote;
-    });*/

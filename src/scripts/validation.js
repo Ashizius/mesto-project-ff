@@ -1,5 +1,4 @@
-const getErrorElement = (form, input,classes) => form.querySelector(classes.getError(form, input));
-//const getErrorElement = (form, input) => console.log(`.${form.getAttribute('name')}__${input.name}--error`);
+const getErrorElement = (form, input) => form.querySelector(`.${form.getAttribute('name')}__${input.name}--error`);
 export const getSubmitButton = (form) => Array.from(form.elements).find(button=>(button.type==="submit"));
 
 const disableButton = (button, classes) => {
