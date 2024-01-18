@@ -89,8 +89,19 @@ export const requestUnlikeCard = (cardId) => {
   return deleteFromServer(`/cards/likes/${cardId}`)
 }
 
-export const toggleLoadingVisualisation = (element,text,toggledClass) => {
+export const toggleLoadingVisualisation = (element,text,toggledClass,isError) => {
   const initialValue=element.textContent;
+  if (isError) {
+    const maxlength=30;
+    if (typeof text !== 'string') {
+      text = 'ошибка';
+    }
+    text='Повторить ('+text+')';
+    if (text.length> maxlength) {
+      text = text.substring(0,maxlength-5)+'...)';
+    }
+  
+  }
   element.textContent=text;
     if (toggledClass) {
       element.classList.toggle(toggledClass);

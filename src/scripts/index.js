@@ -60,9 +60,12 @@ const submitProfile = function (evt) {
       profileName.textContent=profile.name;
       profileDescription.textContent=profile.about;
       hideModal(popupEdit, handleHide);
+      toggleLoadingVisualisation(formEditButton,initialText,formSettings.inactiveButtonClass.substring(1))
     })
-    .catch(error=>console.log(error))
-    .finally(()=>toggleLoadingVisualisation(formEditButton,initialText,formSettings.inactiveButtonClass.substring(1)))
+    .catch(error=>{
+      toggleLoadingVisualisation(formEditButton,error,formSettings.inactiveButtonClass.substring(1),true);
+    })
+    //.finally(()=>toggleLoadingVisualisation(formEditButton,initialText,formSettings.inactiveButtonClass.substring(1)))
 };
 //функции сброса и отправки формы редактирования аватара
 const setupAvatar = function () {
@@ -76,9 +79,13 @@ const submitAvatar = function (evt) {
     .then(ava=>{
         profileAvatar.style.backgroundImage = `url("${formAvatar.elements.link.value}")`;
   hideModal(popupAvatar, handleHide);
+  toggleLoadingVisualisation(formAvatarButton,initialText,formSettings.inactiveButtonClass.substring(1))
     })
-    .catch(err=>console.log(err))
-    .finally(()=>toggleLoadingVisualisation(formAvatarButton,initialText,formSettings.inactiveButtonClass.substring(1)))
+    .catch(error=>{
+      //console.log(error)
+      toggleLoadingVisualisation(formAvatarButton,error,formSettings.inactiveButtonClass.substring(1),true)
+    })
+    //.finally(()=>)
 
 };
 //функции сброса и отправки формы создания карточки
@@ -98,9 +105,12 @@ const submitPlace = function (evt) {
       hideModal(popupNewPlace, handleHide);
       clearValidation(formNewPlace, formSettings);
       formNewPlace.reset();
+      toggleLoadingVisualisation(formNewPlaceButton,initialText,formSettings.inactiveButtonClass.substring(1))
     })
-  .catch(err=>{console.log(err)})
-  .finally(()=>toggleLoadingVisualisation(formNewPlaceButton,initialText,formSettings.inactiveButtonClass.substring(1)))
+  .catch(error=>{
+    //console.log(error)
+    toggleLoadingVisualisation(formNewPlaceButton,error,formSettings.inactiveButtonClass.substring(1),true)})
+  //.finally(()=>)
 };
 
 //функция лайка карточки
@@ -154,9 +164,13 @@ const submitDeleteCard = (evt) => {
       markedCard.remove(markedCard.cardElement,markedCard.handle);
       hideModal(popupDeleteCard, handleHide);
       markedCard=null;
+      toggleLoadingVisualisation(formDeleteCardButton,initialText,formSettings.inactiveButtonClass.substring(1))
     })
-    .catch(error=>console.log(error))
-    .finally(()=>toggleLoadingVisualisation(formDeleteCardButton,initialText,formSettings.inactiveButtonClass.substring(1)))
+    .catch(error=>{
+      console.log(error);
+      toggleLoadingVisualisation(formDeleteCardButton,error,formSettings.inactiveButtonClass.substring(1),true)
+    })
+    //.finally(()=>)
   }
 }
 
@@ -309,9 +323,8 @@ const initializePage = function() {
   });
     enableValidation(formSettings); 
   })
-  .catch((errors) => {
-    console.log(errors); // выводим ошибку в консоль
+  .catch((error) => {
+    console.log(error); // выводим ошибку в консоль
   })
 }
 initializePage();
-
