@@ -111,11 +111,13 @@ const submitAvatar = (evt) => {
     .then((profile) => {
       profileAvatar.style.backgroundImage = `url("${profile.avatar}")`; //запись значения из ответа сервера
       hideModal(popupAvatar, handleHide);
+      formAvatar.reset();
       toggleLoadingVisualisation(
         formAvatarButton,
         initialText,
         formSettings.inactiveButtonClass.substring(1)
       );
+      clearValidation(formAvatar, formSettings);
     })
     .catch((error) => {
       toggleLoadingVisualisation(
