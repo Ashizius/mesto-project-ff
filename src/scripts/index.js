@@ -25,8 +25,7 @@ const formAvatar = document.forms['edit-avatar'];
 const formDeleteCard = document.forms['delete-card'];
 const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
 const placesList = document.querySelector('.places__list');
-const findSubmitButton = (form) =>
-  Array.from(form.elements).find((button) => button.type === 'submit');
+const findSubmitButton = (form) => form.querySelector(formSettings.submitButtonSelector);
 const formEditButton = findSubmitButton(formEdit);
 const formNewPlaceButton = findSubmitButton(formNewPlace);
 const formAvatarButton = findSubmitButton(formAvatar);
@@ -45,7 +44,7 @@ import {
   requestUpdateAvatar,
   requestPutCard,
   requestRemoveCard,
-  toggleLoadingVisualisation,
+  toggleLoadingVisualisation
 } from './api.js';
 
 let profileInfo;
@@ -69,7 +68,7 @@ const submitProfile = (evt) => {
   const initialText = toggleLoadingVisualisation(
     formEditButton,
     modalClasses.savingMessage,
-    formSettings.inactiveButtonClass.substring(1)
+    formSettings.inactiveButtonClass
   ); //смена надписи кнопки
   requestUpdateProfile({
     name: formEdit.elements.name.value,
@@ -82,14 +81,15 @@ const submitProfile = (evt) => {
       toggleLoadingVisualisation(
         formEditButton,
         initialText,
-        formSettings.inactiveButtonClass.substring(1)
+        formSettings.inactiveButtonClass
       ); //возврат надписи кнопки
+      clearValidation(formEdit, formSettings);
     })
     .catch((error) => {
       toggleLoadingVisualisation(
         formEditButton,
         error,
-        formSettings.inactiveButtonClass.substring(1),
+        formSettings.inactiveButtonClass,
         true
       ); //смена надписи на предложение повторить
     });
@@ -105,7 +105,7 @@ const submitAvatar = (evt) => {
   const initialText = toggleLoadingVisualisation(
     formAvatarButton,
     modalClasses.savingMessage,
-    formSettings.inactiveButtonClass.substring(1)
+    formSettings.inactiveButtonClass
   );
   requestUpdateAvatar({ avatar: formAvatar.elements.link.value })
     .then((profile) => {
@@ -115,7 +115,7 @@ const submitAvatar = (evt) => {
       toggleLoadingVisualisation(
         formAvatarButton,
         initialText,
-        formSettings.inactiveButtonClass.substring(1)
+        formSettings.inactiveButtonClass
       );
       clearValidation(formAvatar, formSettings);
     })
@@ -123,7 +123,7 @@ const submitAvatar = (evt) => {
       toggleLoadingVisualisation(
         formAvatarButton,
         error,
-        formSettings.inactiveButtonClass.substring(1),
+        formSettings.inactiveButtonClass,
         true
       );
     });
@@ -138,7 +138,7 @@ const submitPlace = function (evt) {
   const initialText = toggleLoadingVisualisation(
     formNewPlaceButton,
     modalClasses.savingMessage,
-    formSettings.inactiveButtonClass.substring(1)
+    formSettings.inactiveButtonClass
   );
   requestPutCard({
     name: formNewPlace.elements['place-name'].value,
@@ -161,14 +161,14 @@ const submitPlace = function (evt) {
       toggleLoadingVisualisation(
         formNewPlaceButton,
         initialText,
-        formSettings.inactiveButtonClass.substring(1)
+        formSettings.inactiveButtonClass
       );
     })
     .catch((error) => {
       toggleLoadingVisualisation(
         formNewPlaceButton,
         error,
-        formSettings.inactiveButtonClass.substring(1),
+        formSettings.inactiveButtonClass,
         true
       );
     });
@@ -223,7 +223,7 @@ const submitDeleteCard = (evt) => {
   const initialText = toggleLoadingVisualisation(
     formDeleteCardButton,
     modalClasses.removingMessage,
-    formSettings.inactiveButtonClass.substring(1)
+    formSettings.inactiveButtonClass
   );
   if (markedCard) {
     //если есть помеченная карточка под удаление, то сносим
@@ -235,14 +235,14 @@ const submitDeleteCard = (evt) => {
         toggleLoadingVisualisation(
           formDeleteCardButton,
           initialText,
-          formSettings.inactiveButtonClass.substring(1)
+          formSettings.inactiveButtonClass
         );
       })
       .catch((error) => {
         toggleLoadingVisualisation(
           formDeleteCardButton,
           error,
-          formSettings.inactiveButtonClass.substring(1),
+          formSettings.inactiveButtonClass,
           true
         );
       });

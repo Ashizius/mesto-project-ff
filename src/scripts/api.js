@@ -104,6 +104,12 @@ export const toggleLoadingVisualisation = (
   element.textContent = text;
   if (toggledClass) {
     element.classList.toggle(toggledClass);
+    if (element.hasAttribute('disabled')) {
+      element.removeAttribute('disabled');
+    }
+    else {
+      element.setAttribute('disabled','');
+    }
   }
   return initialValue;
 };
