@@ -74,7 +74,7 @@ const setFormListeners = (form, classes) => { //назначить слушат�
   ); //поиск кнопки заранее, чтобы передать в качестве аргумента. Сделано для избегания многократного её поиска
   formElementsArray.forEach((input) => {
     if (input.nodeName === 'INPUT') {
-      let errorElement = getErrorElement(form, input, classes);
+      const errorElement = getErrorElement(form, input, classes);
       input.addEventListener('input', () => {
         validateInput(input, classes, errorElement, submitButton);
         if (isValidForm(formElementsArray)) {

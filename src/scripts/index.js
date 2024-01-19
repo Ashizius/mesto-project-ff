@@ -32,7 +32,7 @@ const formAvatarButton = findSubmitButton(formAvatar);
 const formDeleteCardButton = findSubmitButton(formDeleteCard);
 
 import { createCard } from './card.js'; //импорт функций поведения карточек
-import { showModal, hideModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
+import { showModal, hideModal, getModal, getActiveModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
 import { cardClasses, modalClasses, formSettings } from './constants.js'; //импорт классов модальных окон
 import { clearValidation, enableValidation } from './validation.js'; //импорт классов модальных окон
 import {
@@ -128,6 +128,7 @@ const submitAvatar = (evt) => {
       );
     });
 };
+
 //функции сброса и отправки формы создания карточки
 const setupPlace = () => {
   formNewPlace.reset();
@@ -156,13 +157,13 @@ const submitPlace = function (evt) {
         profileInfo
       );
       hideModal(popupNewPlace, handleHide);
-      clearValidation(formNewPlace, formSettings);
       formNewPlace.reset();
       toggleLoadingVisualisation(
         formNewPlaceButton,
         initialText,
         formSettings.inactiveButtonClass
       );
+      clearValidation(formNewPlace, formSettings);      
     })
     .catch((error) => {
       toggleLoadingVisualisation(
@@ -211,6 +212,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
 
 const removeCard = (cardElement, remove, handle, card) => {
   //данная функция вызывается при клике по корзине и помечает карточку под удаление, заодно так гарантируется, что удаляемая карточка единственная
+  showModal(popupDeleteCard,handleHide);
   markedCard = {};
   markedCard.cardElement = cardElement;
   markedCard.remove = remove;
@@ -249,44 +251,6 @@ const submitDeleteCard = (evt) => {
   }
 };
 
-//собранные модальные окна в один объект
-const modalRules = [
-  {
-    activator: 'profile__edit-button',
-    popup: popupEdit,
-    form: formEdit,
-    setup: setupProfile, //первоначальная установка и сброс форм
-    submit: submitProfile, //отправка форм
-  },
-  {
-    activator: 'profile__add-button',
-    popup: popupNewPlace,
-    form: formNewPlace,
-    setup: setupPlace,
-    submit: submitPlace,
-  },
-  {
-    activator: 'profile__image',
-    popup: popupAvatar,
-    form: formAvatar,
-    setup: setupAvatar,
-    submit: submitAvatar,
-  },
-  {
-    activator: 'card__delete-button',
-    popup: popupDeleteCard,
-    form: formDeleteCard,
-    setup: () => {
-      markedCard = null;
-    },
-    submit: submitDeleteCard,
-  },
-  {
-    activator: 'card__image',
-    popup: popupCard,
-  },
-];
-
 //копирование свойств изображения
 const copyImage = (img1, img2) => {
   img1.src = img2.src;
@@ -300,6 +264,7 @@ const copyText = (elem1, elem2) => {
 const showCard = (cardCaption, cardImage) => {
   copyText(popupCardCaption, cardCaption);
   copyImage(popupCardImage, cardImage);
+  showModal(popupCard,handleHide);
 };
 
 //размещение карточки в контейнере
@@ -332,21 +297,6 @@ const initializeCards = (
   });
 };
 
-//функция, которая получает модальное окно с правилами взаимодействия по классу вызывающего его элемента
-const getModal = (element) => {
-  return modalRules.find(
-    (item) =>
-      element.classList.contains(item.activator) || element === item.popup
-  );
-};
-
-//функция, которая ищет среди модальных окон открытое
-const getActiveModal = () => {
-  return modalRules.find((item) =>
-    item.popup.classList.contains(modalClasses.activated)
-  );
-};
-
 //функция для слушателя закрытия модального окна
 const handleHide = (evt) => {
   if (
@@ -355,7 +305,7 @@ const handleHide = (evt) => {
         evt.target.classList.contains(modalClasses.closeButton))) ||
     evt.key === 'Escape'
   ) {
-    const modalRule = getActiveModal();
+    const modalRule = getActiveModal(modalRules);
     if (modalRule.form) {
       modalRule.setup(); //сброс значений формы до тредуемых при закрытии модального окна
     }
@@ -367,12 +317,53 @@ const handleHide = (evt) => {
 
 //слушатели действий с модальным окном
 const handleModal = (evt) => {
-  const modalRule = getModal(evt.target); // поиск окна по классу кнопки
-  if (modalRule && !getActiveModal()) {
+  const modal = getModal(modalRules,evt.target); // поиск окна по классу кнопки
+  if (modal && !getActiveModal(modalRules)) {
     //если найдено окно и нет ещё активного
-    showModal(modalRule.popup, handleHide);
+    showModal(modal.popup, handleHide);
   }
 };
+
+//собранные модальные окна в один объект
+const modalRules = [
+  {
+    activator: 'profile__edit-button',
+    popup: popupEdit,
+    form: formEdit,
+    setup: setupProfile, //первоначальная установка и сброс форм
+    submit: submitProfile, //отправка форм
+  },
+  {
+    activator: 'profile__add-button',
+    popup: popupNewPlace,
+    form: formNewPlace,
+    setup: setupPlace,
+    submit: submitPlace,
+  },
+  {
+    activator: 'profile__image',
+    popup: popupAvatar,
+    form: formAvatar,
+    setup: setupAvatar,
+    submit: submitAvatar,
+  },
+  {
+    activator: 'card__delete-button',
+    popup: popupDeleteCard,
+    form: formDeleteCard,
+    setup: () => {
+      markedCard = null;
+    },
+    submit: submitDeleteCard,
+    multiple: true
+  },
+  {
+    activator: 'card__image',
+    popup: popupCard,
+    multiple: true
+  },
+];
+
 
 const initializePage = () => {
   Promise.all([getInitialCards(), getProfileInfo()])
@@ -391,12 +382,19 @@ const initializePage = () => {
         profileInfo
       );
       //обработчики оверлеев
-      document.addEventListener('click', handleModal); //сразу на весь документ, чтобы уменьшить количество слушателей событий
-      //навесить слушатель сабмита на все формы
-      modalRules.forEach((item) => {
-        if (item.form) {
-          item.setup();
-          item.form.addEventListener('submit', item.submit);
+       //сразу на весь документ, чтобы уменьшить количество слушателей событий
+      modalRules.forEach((modal) => {
+        if (!modal.multiple) {
+          modal.activatorElement=document.querySelector('.'+modal.activator);
+          modal.activatorElement.addEventListener('click', handleModal);
+        }
+/*        else {
+          modal.activatorElements=Array.from(document.querySelectorAll('.'+modal.activator));
+          modal.activatorElements.forEach(activatorElement=>activatorElement.addEventListener('click', handleModal));
+        }*/
+        if (modal.form) {//навесить слушатель сабмита на формы
+          modal.setup();
+          modal.form.addEventListener('submit', modal.submit);
         }
       });
       enableValidation(formSettings);
