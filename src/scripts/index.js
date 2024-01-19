@@ -61,7 +61,7 @@ const setupProfileInfo = (info) => {
 const setupProfile = () => {
   formEdit.elements.name.value = profileName.textContent;
   formEdit.elements.description.value = profileDescription.textContent;
-  clearValidation(formEdit, formSettings); //по заданию сказано использовать такую функцию, которая выключает кнопку отправки формы
+  clearValidation(formEdit, formSettings);
 };
 const submitProfile = (evt) => {
   evt.preventDefault();
@@ -98,7 +98,6 @@ const submitProfile = (evt) => {
 //функции сброса и отправки формы редактирования аватара
 const setupAvatar = () => {
   formAvatar.reset();
-  clearValidation(formAvatar, formSettings);
 };
 const submitAvatar = (evt) => {
   evt.preventDefault();
@@ -117,7 +116,7 @@ const submitAvatar = (evt) => {
         initialText,
         formSettings.inactiveButtonClass
       );
-      clearValidation(formAvatar, formSettings);
+      formAvatar.reset();  //UPDATE: ошибки скрываются сразу по событию сброса формы
     })
     .catch((error) => {
       toggleLoadingVisualisation(
@@ -132,7 +131,6 @@ const submitAvatar = (evt) => {
 //функции сброса и отправки формы создания карточки
 const setupPlace = () => {
   formNewPlace.reset();
-  clearValidation(formNewPlace, formSettings);
 };
 const submitPlace = function (evt) {
   evt.preventDefault();
@@ -163,7 +161,7 @@ const submitPlace = function (evt) {
         initialText,
         formSettings.inactiveButtonClass
       );
-      clearValidation(formNewPlace, formSettings);      
+      formNewPlace.reset(); //UPDATE: ошибки скрываются сразу по событию сброса формы
     })
     .catch((error) => {
       toggleLoadingVisualisation(
@@ -383,6 +381,7 @@ const initializePage = () => {
       );
       //обработчики оверлеев
        //сразу на весь документ, чтобы уменьшить количество слушателей событий
+      enableValidation(formSettings);
       modalRules.forEach((modal) => {
         if (!modal.multiple) {
           modal.activatorElement=document.querySelector('.'+modal.activator);
@@ -397,7 +396,6 @@ const initializePage = () => {
           modal.form.addEventListener('submit', modal.submit);
         }
       });
-      enableValidation(formSettings);
     })
     .catch((error) => {
       console.log(error); // выводим ошибку в консоль

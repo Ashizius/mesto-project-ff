@@ -72,6 +72,15 @@ const setFormListeners = (form, classes) => { //назначить слушат�
   const submitButton = formElementsArray.find(
     (button) => button.type === 'submit'
   ); //поиск кнопки заранее, чтобы передать в качестве аргумента. Сделано для избегания многократного её поиска
+  const handleFormReset = () => {
+    formElementsArray.forEach((input) => {
+      if (input.nodeName === 'INPUT') {
+        hideErrorMessage(input, classes, getErrorElement(form, input, classes));
+      }
+    });
+    disableButton(submitButton, classes.inactiveButtonClass)
+  }
+  form.addEventListener('reset',handleFormReset);//UPDATE: теперь инактивация кнопки по событию сброса формы, а также сброс полей ошибок
   formElementsArray.forEach((input) => {
     if (input.nodeName === 'INPUT') {
       const errorElement = getErrorElement(form, input, classes);
@@ -97,7 +106,7 @@ export const enableValidation = (formClasses) => {
 };
 
 export const clearValidation = (form, classes) => {
-  disableButton(getSubmitButton(form), classes.inactiveButtonClass);
+  enableButton(getSubmitButton(form), classes.inactiveButtonClass);
   Array.from(form.elements).forEach((input) => {
     if (input.nodeName === 'INPUT') {
       hideErrorMessage(input, classes, getErrorElement(form, input, classes));
