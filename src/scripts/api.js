@@ -16,99 +16,93 @@ const handleResponse = (res) => {
   return Promise.reject(`Ошибка: ${res.status}`);
 };
 
-const receiveFromServer = (link) => {
-  return fetch(`${config.baseUrl}${link}`, {
-    headers: config.headers,
-  }).then(handleResponse);
-};
-
-const updateOnServer = (link, message) => {
-  return fetch(`${config.baseUrl}${link}`, {
-    method: 'PATCH',
-    headers: config.headers,
-    body: JSON.stringify(message),
-  }).then(handleResponse);
-};
-
-const uploadToServer = (link, message) => {
-  return fetch(`${config.baseUrl}${link}`, {
-    method: 'POST',
-    headers: config.headers,
-    body: JSON.stringify(message),
-  }).then(handleResponse);
-};
-
-const deleteFromServer = (link) => {
-  return fetch(`${config.baseUrl}${link}`, {
-    method: 'DELETE',
-    headers: config.headers,
-  }).then(handleResponse);
-};
-
-const addToServer = (link) => {
-  return fetch(`${config.baseUrl}${link}`, {
-    method: 'PUT',
-    headers: config.headers,
-  }).then(handleResponse);
-};
+const sendRequest = (link, settings) => {
+  return fetch(`${config.baseUrl}${link}`, settings).then(handleResponse);
+}
 
 export const getInitialCards = () => {
-  return receiveFromServer('/cards');
+  return sendRequest('/cards',{
+    headers: config.headers,
+  });
 };
 
 export const getProfileInfo = () => {
-  return receiveFromServer('/users/me');
+  return sendRequest('/users/me',{
+    headers: config.headers,
+  });
 };
 
-export const requestUpdateProfile = (profile) => {
-  return updateOnServer('/users/me', profile);
+export const requestUpdateProfile = (message) => {
+  return sendRequest('/users/me', {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify(message),
+  });
 };
 
 export const requestUpdateAvatar = (avatar) => {
-  return updateOnServer('/users/me/avatar', avatar);
+  return sendRequest('/users/me/avatar', {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify(avatar),
+  });
 };
 
 export const requestPutCard = (card) => {
-  return uploadToServer('/cards', card);
+  return sendRequest('/cards', {
+    method: 'POST',
+    headers: config.headers,
+    body: JSON.stringify(card),
+  });
 };
 
 export const requestRemoveCard = (card) => {
-  return deleteFromServer(`/cards/${card._id}`);
+  return sendRequest(`/cards/${card._id}`,{
+    method: 'DELETE',
+    headers: config.headers,
+  });
 };
 
 export const requestLikeCard = (cardId) => {
-  return addToServer(`/cards/likes/${cardId}`);
+  return sendRequest(`/cards/likes/${cardId}`,{
+    method: 'PUT',
+    headers: config.headers,
+  });
 };
 
 export const requestUnlikeCard = (cardId) => {
-  return deleteFromServer(`/cards/likes/${cardId}`);
+  return sendRequest(`/cards/likes/${cardId}`,{
+    method: 'DELETE',
+    headers: config.headers,
+  });
 };
 
 export const toggleLoadingVisualisation = (
+  isLoading,
   element,
-  text,
-  toggledClass,
-  isError
+  {commonText='Сохранить',
+  loadingText='Сохранение...',
+  isError=false,
+  errorText='ошибка'}={}
 ) => {
   const initialValue = element.textContent;
   if (isError) {
     const maxlength = 30;
-    if (typeof text !== 'string') {
-      text = 'ошибка';
+    if (typeof errorText !== 'string') {
+      errorText = 'ошибка';
     }
-    text = 'Повторить (' + text + ')';
-    if (text.length > maxlength) {
-      text = text.substring(0, maxlength - 5) + '...)';
+    errorText = 'Повторить (' + text + ')';
+    if (errorText.length > maxlength) {
+      errorText = errorText.substring(0, maxlength - 5) + '...)';
     }
+    element.textContent = errorText;
   }
-  element.textContent = text;
-  if (toggledClass) {
-    element.classList.toggle(toggledClass);
-    if (element.hasAttribute('disabled')) {
-      element.removeAttribute('disabled');
+  else {
+    if (isLoading) {
+      element.textContent=loadingText;
     }
     else {
-      element.setAttribute('disabled','');
+      element.textContent=commonText;
     }
   }
   return initialValue;

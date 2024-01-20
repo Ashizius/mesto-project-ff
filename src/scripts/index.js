@@ -26,10 +26,10 @@ const formDeleteCard = document.forms['delete-card'];
 const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
 const placesList = document.querySelector('.places__list');
 const findSubmitButton = (form) => form.querySelector(formSettings.submitButtonSelector);
-const formEditButton = findSubmitButton(formEdit);
+/*const formEditButton = findSubmitButton(formEdit);
 const formNewPlaceButton = findSubmitButton(formNewPlace);
 const formAvatarButton = findSubmitButton(formAvatar);
-const formDeleteCardButton = findSubmitButton(formDeleteCard);
+const formDeleteCardButton = findSubmitButton(formDeleteCard);*/
 
 import { createCard } from './card.js'; //импорт функций поведения карточек
 import { showModal, hideModal, getModal, getActiveModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
@@ -65,10 +65,11 @@ const setupProfile = () => {
 };
 const submitProfile = (evt) => {
   evt.preventDefault();
-  const initialText = toggleLoadingVisualisation(
-    formEditButton,
-    modalClasses.savingMessage,
-    formSettings.inactiveButtonClass
+  const submitButton = evt.submitter;
+  const initialText = submitButton.textContent;
+  toggleLoadingVisualisation(true,
+    submitButton,
+    {loadingText:modalClasses.savingMessage}
   ); //смена надписи кнопки
   requestUpdateProfile({
     name: formEdit.elements.name.value,
@@ -78,19 +79,17 @@ const submitProfile = (evt) => {
       profileName.textContent = profile.name; //запись значения из ответа сервера
       profileDescription.textContent = profile.about; //запись значения из ответа сервера
       hideModal(popupEdit, handleHide);
-      toggleLoadingVisualisation(
-        formEditButton,
-        initialText,
-        formSettings.inactiveButtonClass
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {commonText:initialText}
       ); //возврат надписи кнопки
       clearValidation(formEdit, formSettings);
     })
     .catch((error) => {
-      toggleLoadingVisualisation(
-        formEditButton,
-        error,
-        formSettings.inactiveButtonClass,
-        true
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {isError: true,
+        errorText: error}
       ); //смена надписи на предложение повторить
     });
 };
@@ -101,29 +100,28 @@ const setupAvatar = () => {
 };
 const submitAvatar = (evt) => {
   evt.preventDefault();
-  const initialText = toggleLoadingVisualisation(
-    formAvatarButton,
-    modalClasses.savingMessage,
-    formSettings.inactiveButtonClass
+  const submitButton = evt.submitter;
+  const initialText = submitButton.textContent;
+  toggleLoadingVisualisation( true,
+    submitButton,
+    {loadingText:modalClasses.savingMessage}
   );
   requestUpdateAvatar({ avatar: formAvatar.elements.link.value })
     .then((profile) => {
       profileAvatar.style.backgroundImage = `url("${profile.avatar}")`; //запись значения из ответа сервера
       hideModal(popupAvatar, handleHide);
       formAvatar.reset();
-      toggleLoadingVisualisation(
-        formAvatarButton,
-        initialText,
-        formSettings.inactiveButtonClass
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {commonText:initialText}
       );
       formAvatar.reset();  //UPDATE: ошибки скрываются сразу по событию сброса формы
     })
     .catch((error) => {
-      toggleLoadingVisualisation(
-        formAvatarButton,
-        error,
-        formSettings.inactiveButtonClass,
-        true
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {isError: true,
+          errorText: error}
       );
     });
 };
@@ -134,10 +132,11 @@ const setupPlace = () => {
 };
 const submitPlace = function (evt) {
   evt.preventDefault();
-  const initialText = toggleLoadingVisualisation(
-    formNewPlaceButton,
-    modalClasses.savingMessage,
-    formSettings.inactiveButtonClass
+  const submitButton = evt.submitter;
+  const initialText = submitButton.textContent;
+  toggleLoadingVisualisation(true,
+    submitButton,
+    {loadingText:modalClasses.savingMessage}
   );
   requestPutCard({
     name: formNewPlace.elements['place-name'].value,
@@ -156,19 +155,17 @@ const submitPlace = function (evt) {
       );
       hideModal(popupNewPlace, handleHide);
       formNewPlace.reset();
-      toggleLoadingVisualisation(
-        formNewPlaceButton,
-        initialText,
-        formSettings.inactiveButtonClass
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {commonText:initialText}
       );
       formNewPlace.reset(); //UPDATE: ошибки скрываются сразу по событию сброса формы
     })
     .catch((error) => {
-      toggleLoadingVisualisation(
-        formNewPlaceButton,
-        error,
-        formSettings.inactiveButtonClass,
-        true
+      toggleLoadingVisualisation(false,
+        submitButton,
+        {isError: true,
+          errorText: error}
       );
     });
 };
@@ -179,7 +176,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
     cardLikeCounter.textContent = card.likes.length;
     return;
   } //Если не указан пользователь, то просто вывести количество лайков
-  toggleLoadingVisualisation(cardLikeCounter, '⌛️', null); //выводит символ в количество лайков, на время получения ответа от сервера
+  cardLikeCounter.textContent='⌛️'; //выводит символ в количество лайков, на время получения ответа от сервера
   if (!cardLikeButton.classList.contains(cardClasses.cardLiked)) {
     requestLikeCard(card._id)
       .then((receivedCard) => {
@@ -220,10 +217,11 @@ const removeCard = (cardElement, remove, handle, card) => {
 
 const submitDeleteCard = (evt) => {
   evt.preventDefault();
-  const initialText = toggleLoadingVisualisation(
-    formDeleteCardButton,
-    modalClasses.removingMessage,
-    formSettings.inactiveButtonClass
+  const submitButton = evt.submitter;
+  const initialText = submitButton.textContent;
+  toggleLoadingVisualisation(true,
+    submitButton,
+    {loadingText:modalClasses.removingMessage}
   );
   if (markedCard) {
     //если есть помеченная карточка под удаление, то сносим
@@ -232,18 +230,16 @@ const submitDeleteCard = (evt) => {
         markedCard.remove(markedCard.cardElement, markedCard.handle);
         hideModal(popupDeleteCard, handleHide);
         markedCard = null; //сбрасываем помеченную карточку
-        toggleLoadingVisualisation(
-          formDeleteCardButton,
-          initialText,
-          formSettings.inactiveButtonClass
+        toggleLoadingVisualisation(false,
+          submitButton,
+          {commonText:initialText}
         );
       })
       .catch((error) => {
-        toggleLoadingVisualisation(
-          formDeleteCardButton,
-          error,
-          formSettings.inactiveButtonClass,
-          true
+        toggleLoadingVisualisation(false,
+          submitButton,
+          {isError: true,
+            errorText: error}
         );
       });
   }
@@ -365,9 +361,8 @@ const modalRules = [
 
 const initializePage = () => {
   Promise.all([getInitialCards(), getProfileInfo()])
-    .then((results) => {
-      const initialCards = results[0];
-      profileInfo = results[1];
+    .then(([initialCards, userInfo]) => {
+      profileInfo = userInfo;
       setupProfileInfo(profileInfo);
       initializeCards(
         initialCards,
@@ -397,9 +392,7 @@ const initializePage = () => {
         }
       });
     })
-    .catch((error) => {
-      console.log(error); // выводим ошибку в консоль
-    });
+    .catch(console.error);
 };
 
 initializePage();
