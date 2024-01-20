@@ -18,16 +18,16 @@ const handleResponse = (res) => {
 
 const sendRequest = (link, settings) => {
   return fetch(`${config.baseUrl}${link}`, settings).then(handleResponse);
-}
+};
 
 export const getInitialCards = () => {
-  return sendRequest('/cards',{
+  return sendRequest('/cards', {
     headers: config.headers,
   });
 };
 
 export const getProfileInfo = () => {
-  return sendRequest('/users/me',{
+  return sendRequest('/users/me', {
     headers: config.headers,
   });
 };
@@ -57,21 +57,21 @@ export const requestPutCard = (card) => {
 };
 
 export const requestRemoveCard = (card) => {
-  return sendRequest(`/cards/${card._id}`,{
+  return sendRequest(`/cards/${card._id}`, {
     method: 'DELETE',
     headers: config.headers,
   });
 };
 
 export const requestLikeCard = (cardId) => {
-  return sendRequest(`/cards/likes/${cardId}`,{
+  return sendRequest(`/cards/likes/${cardId}`, {
     method: 'PUT',
     headers: config.headers,
   });
 };
 
 export const requestUnlikeCard = (cardId) => {
-  return sendRequest(`/cards/likes/${cardId}`,{
+  return sendRequest(`/cards/likes/${cardId}`, {
     method: 'DELETE',
     headers: config.headers,
   });
@@ -80,10 +80,12 @@ export const requestUnlikeCard = (cardId) => {
 export const toggleLoadingVisualisation = (
   isLoading,
   element,
-  {commonText='Сохранить',
-  loadingText='Сохранение...',
-  isError=false,
-  errorText='ошибка'}={}
+  {
+    commonText = 'Сохранить',
+    loadingText = 'Сохранение...',
+    isError = false,
+    errorText = 'ошибка',
+  }
 ) => {
   const initialValue = element.textContent;
   if (isError) {
@@ -91,19 +93,16 @@ export const toggleLoadingVisualisation = (
     if (typeof errorText !== 'string') {
       errorText = 'ошибка';
     }
-    errorText = 'Повторить (' + text + ')';
+    errorText = 'Повторить (' + errorText + ')';
     if (errorText.length > maxlength) {
       errorText = errorText.substring(0, maxlength - 5) + '...)';
     }
     element.textContent = errorText;
+  } else {
+    element.textContent = isLoading ? loadingText : commonText;
   }
-  else {
-    if (isLoading) {
-      element.textContent=loadingText;
-    }
-    else {
-      element.textContent=commonText;
-    }
-  }
+  isLoading
+    ? element.setAttribute('disabled', '')
+    : element.removeAttribute('disabled');
   return initialValue;
 };

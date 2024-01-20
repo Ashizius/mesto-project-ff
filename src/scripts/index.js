@@ -25,11 +25,6 @@ const formAvatar = document.forms['edit-avatar'];
 const formDeleteCard = document.forms['delete-card'];
 const cardTemplate = document.querySelector('#card-template').content; // Темплейт карточки
 const placesList = document.querySelector('.places__list');
-const findSubmitButton = (form) => form.querySelector(formSettings.submitButtonSelector);
-/*const formEditButton = findSubmitButton(formEdit);
-const formNewPlaceButton = findSubmitButton(formNewPlace);
-const formAvatarButton = findSubmitButton(formAvatar);
-const formDeleteCardButton = findSubmitButton(formDeleteCard);*/
 
 import { createCard } from './card.js'; //импорт функций поведения карточек
 import { showModal, hideModal, getModal, getActiveModal } from './modal.js'; //импорт функции открытия и закрытия модального окна, а также оперирование формами
@@ -44,7 +39,7 @@ import {
   requestUpdateAvatar,
   requestPutCard,
   requestRemoveCard,
-  toggleLoadingVisualisation
+  toggleLoadingVisualisation,
 } from './api.js';
 
 let profileInfo;
@@ -57,117 +52,58 @@ const setupProfileInfo = (info) => {
   profileAvatar.style.backgroundImage = `url("${info.avatar}")`;
 };
 
+const handleSubmit = (evt, popup, request, loadingText = 'Сохранение...') => {
+  evt.preventDefault();
+  const submitButton = evt.submitter;
+  const initialText = submitButton.textContent;
+  toggleLoadingVisualisation(true, submitButton, { loadingText: loadingText }); //смена надписи кнопки
+  request()
+    .then((formFill) => {
+      hideModal(popup, handleHide);
+      toggleLoadingVisualisation(false, submitButton, {
+        commonText: initialText,
+      });
+      if (formFill) {
+        //если был вернут объект для заполнения, то заполнить форму
+        Object.keys(formFill).forEach((key) => {
+          if (key !== 'form') {
+            formFill.form.elements[key].value = formFill[key];
+          }
+        });
+      } else {
+        evt.target.reset();
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      toggleLoadingVisualisation(false, submitButton, {
+        isError: true,
+        errorText: error,
+      }); //смена надписи на предложение повторить
+    });
+};
+
 //функции сброса и отправки формы редактирования профиля
 const setupProfile = () => {
   formEdit.elements.name.value = profileName.textContent;
   formEdit.elements.description.value = profileDescription.textContent;
   clearValidation(formEdit, formSettings);
 };
-const submitProfile = (evt) => {
-  evt.preventDefault();
-  const submitButton = evt.submitter;
-  const initialText = submitButton.textContent;
-  toggleLoadingVisualisation(true,
-    submitButton,
-    {loadingText:modalClasses.savingMessage}
-  ); //смена надписи кнопки
-  requestUpdateProfile({
-    name: formEdit.elements.name.value,
-    about: formEdit.elements.description.value,
-  })
-    .then((profile) => {
-      profileName.textContent = profile.name; //запись значения из ответа сервера
-      profileDescription.textContent = profile.about; //запись значения из ответа сервера
-      hideModal(popupEdit, handleHide);
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {commonText:initialText}
-      ); //возврат надписи кнопки
-      clearValidation(formEdit, formSettings);
-    })
-    .catch((error) => {
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {isError: true,
-        errorText: error}
-      ); //смена надписи на предложение повторить
-    });
+
+const submitProfile = (profile) => {
+  profileName.textContent = profile.name; //запись значения из ответа сервера
+  profileDescription.textContent = profile.about; //запись значения из ответа сервера
+  return { form: formEdit, name: profile.name, description: profile.about }; // передача объекта в следующий then для предзаполнения формы
 };
 
-//функции сброса и отправки формы редактирования аватара
-const setupAvatar = () => {
-  formAvatar.reset();
-};
-const submitAvatar = (evt) => {
-  evt.preventDefault();
-  const submitButton = evt.submitter;
-  const initialText = submitButton.textContent;
-  toggleLoadingVisualisation( true,
-    submitButton,
-    {loadingText:modalClasses.savingMessage}
-  );
-  requestUpdateAvatar({ avatar: formAvatar.elements.link.value })
-    .then((profile) => {
-      profileAvatar.style.backgroundImage = `url("${profile.avatar}")`; //запись значения из ответа сервера
-      hideModal(popupAvatar, handleHide);
-      formAvatar.reset();
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {commonText:initialText}
-      );
-      formAvatar.reset();  //UPDATE: ошибки скрываются сразу по событию сброса формы
-    })
-    .catch((error) => {
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {isError: true,
-          errorText: error}
-      );
-    });
+//функция отправки формы редактирования аватара
+const submitAvatar = (profile) => {
+  profileAvatar.style.backgroundImage = `url("${profile.avatar}")`;
 };
 
-//функции сброса и отправки формы создания карточки
-const setupPlace = () => {
-  formNewPlace.reset();
-};
-const submitPlace = function (evt) {
-  evt.preventDefault();
-  const submitButton = evt.submitter;
-  const initialText = submitButton.textContent;
-  toggleLoadingVisualisation(true,
-    submitButton,
-    {loadingText:modalClasses.savingMessage}
-  );
-  requestPutCard({
-    name: formNewPlace.elements['place-name'].value,
-    link: formNewPlace.elements['link'].value,
-  })
-    .then((card) => {
-      putCard(
-        card,
-        cardTemplate,
-        placesList,
-        createCard,
-        removeCard,
-        likeCard,
-        showCard,
-        profileInfo
-      );
-      hideModal(popupNewPlace, handleHide);
-      formNewPlace.reset();
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {commonText:initialText}
-      );
-      formNewPlace.reset(); //UPDATE: ошибки скрываются сразу по событию сброса формы
-    })
-    .catch((error) => {
-      toggleLoadingVisualisation(false,
-        submitButton,
-        {isError: true,
-          errorText: error}
-      );
-    });
+//функция отправки формы создания карточки
+const submitPlace = (card) => {
+  putCard(card);
 };
 
 //функция лайка карточки
@@ -176,7 +112,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
     cardLikeCounter.textContent = card.likes.length;
     return;
   } //Если не указан пользователь, то просто вывести количество лайков
-  cardLikeCounter.textContent='⌛️'; //выводит символ в количество лайков, на время получения ответа от сервера
+  cardLikeCounter.textContent = '⌛️'; //выводит символ в количество лайков, на время получения ответа от сервера
   if (!cardLikeButton.classList.contains(cardClasses.cardLiked)) {
     requestLikeCard(card._id)
       .then((receivedCard) => {
@@ -187,7 +123,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
         cardLikeCounter.textContent = receivedCard.likes.length;
       })
       .catch((err) => {
-        console.log(err); //выводит сообщение об ошибке в консоль
+        console.error(err); //выводит сообщение об ошибке в консоль
         cardLikeCounter.textContent = '?'; //если ответ от сервера не получен, то неизвестно, какое количество лайков стало
       });
   } else {
@@ -199,7 +135,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
         cardLikeCounter.textContent = receivedCard.likes.length;
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         cardLikeCounter.textContent = '?';
       });
   }
@@ -207,7 +143,7 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
 
 const removeCard = (cardElement, remove, handle, card) => {
   //данная функция вызывается при клике по корзине и помечает карточку под удаление, заодно так гарантируется, что удаляемая карточка единственная
-  showModal(popupDeleteCard,handleHide);
+  showModal(popupDeleteCard, handleHide);
   markedCard = {};
   markedCard.cardElement = cardElement;
   markedCard.remove = remove;
@@ -215,34 +151,9 @@ const removeCard = (cardElement, remove, handle, card) => {
   markedCard.card = card;
 };
 
-const submitDeleteCard = (evt) => {
-  evt.preventDefault();
-  const submitButton = evt.submitter;
-  const initialText = submitButton.textContent;
-  toggleLoadingVisualisation(true,
-    submitButton,
-    {loadingText:modalClasses.removingMessage}
-  );
-  if (markedCard) {
-    //если есть помеченная карточка под удаление, то сносим
-    requestRemoveCard(markedCard.card)
-      .then(() => {
-        markedCard.remove(markedCard.cardElement, markedCard.handle);
-        hideModal(popupDeleteCard, handleHide);
-        markedCard = null; //сбрасываем помеченную карточку
-        toggleLoadingVisualisation(false,
-          submitButton,
-          {commonText:initialText}
-        );
-      })
-      .catch((error) => {
-        toggleLoadingVisualisation(false,
-          submitButton,
-          {isError: true,
-            errorText: error}
-        );
-      });
-  }
+const submitDeleteCard = () => {
+  markedCard.remove(markedCard.cardElement, markedCard.handle);
+  return { form: formDeleteCard };
 };
 
 //копирование свойств изображения
@@ -258,36 +169,26 @@ const copyText = (elem1, elem2) => {
 const showCard = (cardCaption, cardImage) => {
   copyText(popupCardCaption, cardCaption);
   copyImage(popupCardImage, cardImage);
-  showModal(popupCard,handleHide);
+  showModal(popupCard, handleHide);
 };
 
 //размещение карточки в контейнере
-const putCard = (
-  card,
-  template,
-  container,
-  create,
-  remove,
-  like,
-  show,
-  owner
-) => {
-  container.prepend(create(card, template, remove, like, show, owner));
+const putCard = (card) => {
+  placesList.prepend(
+    createCard(card, {
+      cardTemplate,
+      removeCard,
+      likeCard,
+      showCard,
+      currentUser: profileInfo,
+    })
+  );
 };
 
 //вывод карточек из массива
-const initializeCards = (
-  cardsList,
-  template,
-  container,
-  create,
-  remove,
-  like,
-  show,
-  owner
-) => {
+const initializeCards = (cardsList) => {
   cardsList.forEach((card) => {
-    putCard(card, template, container, create, remove, like, show, owner);
+    putCard(card);
   });
 };
 
@@ -311,14 +212,14 @@ const handleHide = (evt) => {
 
 //слушатели действий с модальным окном
 const handleModal = (evt) => {
-  const modal = getModal(modalRules,evt.target); // поиск окна по классу кнопки
+  const modal = getModal(modalRules, evt.target); // поиск окна по классу кнопки
   if (modal && !getActiveModal(modalRules)) {
     //если найдено окно и нет ещё активного
     showModal(modal.popup, handleHide);
   }
 };
 
-//собранные модальные окна в один объект
+//собранные в один массив объекты, содержащие соответствующие друг-другу модальные окна, классы активаторов, формы и их обработчики
 const modalRules = [
   {
     activator: 'profile__edit-button',
@@ -326,20 +227,32 @@ const modalRules = [
     form: formEdit,
     setup: setupProfile, //первоначальная установка и сброс форм
     submit: submitProfile, //отправка форм
+    request: requestUpdateProfile,
+    parameters: () => ({
+      name: formEdit.elements.name.value,
+      about: formEdit.elements.description.value,
+    }),
   },
   {
     activator: 'profile__add-button',
     popup: popupNewPlace,
     form: formNewPlace,
-    setup: setupPlace,
+    setup: () => formNewPlace.reset(),
     submit: submitPlace,
+    request: requestPutCard,
+    parameters: () => ({
+      name: formNewPlace.elements['place-name'].value,
+      link: formNewPlace.elements['link'].value,
+    }),
   },
   {
     activator: 'profile__image',
     popup: popupAvatar,
     form: formAvatar,
-    setup: setupAvatar,
+    setup: () => formAvatar.reset(),
     submit: submitAvatar,
+    request: requestUpdateAvatar,
+    parameters: () => ({ avatar: formAvatar.elements.link.value }),
   },
   {
     activator: 'card__delete-button',
@@ -349,46 +262,50 @@ const modalRules = [
       markedCard = null;
     },
     submit: submitDeleteCard,
-    multiple: true
+    request: requestRemoveCard,
+    parameters: () => markedCard.card,
+    loading: modalClasses.removingMessage,
+    multiple: true,
   },
   {
     activator: 'card__image',
     popup: popupCard,
-    multiple: true
+    multiple: true,
   },
 ];
-
 
 const initializePage = () => {
   Promise.all([getInitialCards(), getProfileInfo()])
     .then(([initialCards, userInfo]) => {
       profileInfo = userInfo;
       setupProfileInfo(profileInfo);
-      initializeCards(
-        initialCards,
-        cardTemplate,
-        placesList,
-        createCard,
-        removeCard,
-        likeCard,
-        showCard,
-        profileInfo
-      );
+      initializeCards(initialCards);
       //обработчики оверлеев
-       //сразу на весь документ, чтобы уменьшить количество слушателей событий
       enableValidation(formSettings);
       modalRules.forEach((modal) => {
         if (!modal.multiple) {
-          modal.activatorElement=document.querySelector('.'+modal.activator);
+          modal.activatorElement = document.querySelector(
+            '.' + modal.activator
+          );
           modal.activatorElement.addEventListener('click', handleModal);
         }
-/*        else {
-          modal.activatorElements=Array.from(document.querySelectorAll('.'+modal.activator));
-          modal.activatorElements.forEach(activatorElement=>activatorElement.addEventListener('click', handleModal));
-        }*/
-        if (modal.form) {//навесить слушатель сабмита на формы
+          //навесить слушатель сабмита на формы        
+        if (modal.form) {
+          const submitForm = (evt) => {
+            const makeRequest = () => { //создаёт запрос на сабмит на основе промиса ответа от сервера
+              return modal
+                .request(modal.parameters ? modal.parameters() : undefined) //для каждой формы выбирается своя функция запроса к серверу и параметры
+                .then(modal.submit);
+            };
+            handleSubmit( //для каждой формы свой обработчик запроса
+              evt,
+              modal.popup,
+              makeRequest,
+              modal.loading ? modal.loading : undefined //если есть кастомное сообщение загрузки, то вывести его
+            );
+          };
           modal.setup();
-          modal.form.addEventListener('submit', modal.submit);
+          modal.form.addEventListener('submit', submitForm);
         }
       });
     })

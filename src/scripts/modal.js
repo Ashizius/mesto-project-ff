@@ -23,9 +23,8 @@ const showModal = (popup, handleClose) => {
   document.addEventListener('keydown', handleClose);
 };
 
-
 //функция, которая получает модальное окно с правилами взаимодействия по классу вызывающего его элемента
-const getModal = (modalRules,element) => {
+const getModal = (modalRules, element) => {
   return modalRules.find(
     (item) =>
       element.classList.contains(item.activator) || element === item.popup
@@ -38,7 +37,6 @@ const getActiveModal = (modalRules) => {
     item.popup.classList.contains(modalClasses.activated)
   );
 };
-
 
 //экспорт соответствующих функций
 export { showModal, hideModal, getModal, getActiveModal };

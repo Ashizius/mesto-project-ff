@@ -9,11 +9,7 @@ const deleteCard = (cardElement, handler) => {
 // Функция создания элемента карточки
 export const createCard = (
   card,
-  cardTemplate,
-  removeCard,
-  likeCard,
-  showCard,
-  currentUser
+  { cardTemplate, removeCard, likeCard, showCard, currentUser }
 ) => {
   const cardElement = cardTemplate
     .querySelector('.' + cardClasses.card)
