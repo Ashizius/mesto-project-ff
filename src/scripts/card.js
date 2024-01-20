@@ -1,9 +1,19 @@
 import { cardClasses } from './constants.js';
 
 // Функция удаления карточки
-const deleteCard = (cardElement, handler) => {
-  cardElement.remove();
-  cardElement.removeEventListener('click', handler);
+const deleteCard = ({
+  handleLike,
+  handleShow,
+  handleDelete,
+  element,
+  cardLike,
+  cardImage,
+  cardTrash,
+}) => {
+  cardLike.removeEventListener('click', handleLike);
+  cardImage.removeEventListener('click', handleShow);
+  cardTrash.removeEventListener('click', handleDelete);
+  element.remove();
 };
 
 // Функция создания элемента карточки
@@ -19,9 +29,7 @@ export const createCard = (
   const cardTrash = cardElement.querySelector(
     '.' + cardClasses.cardDeleteButton
   );
-  const cardLikeButton = cardElement.querySelector(
-    '.' + cardClasses.cardLikeButton
-  );
+  const cardLike = cardElement.querySelector('.' + cardClasses.cardLikeButton);
   const cardCounter = cardElement.querySelector('.' + cardClasses.cardCounter);
   cardImage.src = card.link;
   cardImage.alt = 'фотография с изображением места ' + card.name;
@@ -30,21 +38,30 @@ export const createCard = (
     cardTrash.remove();
   }
   if (card.likes.some((like) => like._id === currentUser._id)) {
-    cardLikeButton.classList.add(cardClasses.cardLiked);
+    cardLike.classList.add(cardClasses.cardLiked);
   }
-  likeCard(cardLikeButton, cardCounter, card, null);
+  likeCard(cardLike, cardCounter, card, null);
 
   //обработчик клика по карточке, уникальный для каждой карточки:
-  const handleCardClick = (evt) => {
-    const classList = evt.target.classList;
-    if (classList.contains(cardClasses.cardImage)) {
-      showCard(cardTitle, cardImage);
-    } else if (classList.contains(cardClasses.cardLikeButton)) {
-      likeCard(cardLikeButton, cardCounter, card, currentUser._id);
-    } else if (classList.contains(cardClasses.cardDeleteButton)) {
-      removeCard(cardElement, deleteCard, handleCardClick, card);
-    }
+  const handleLike = () => {
+    likeCard(cardLike, cardCounter, card, currentUser._id);
   };
-  cardElement.addEventListener('click', handleCardClick);
+  const handleShow = () => {
+    showCard(cardTitle, cardImage);
+  };
+  const handleDelete = () => {
+    removeCard(card, deleteCard, {
+      handleLike,
+      handleShow,
+      handleDelete,
+      element: cardElement,
+      cardLike,
+      cardImage,
+      cardTrash,
+    });
+  };
+  cardLike.addEventListener('click', handleLike);
+  cardImage.addEventListener('click', handleShow);
+  cardTrash.addEventListener('click', handleDelete);
   return cardElement;
 };

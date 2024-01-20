@@ -39,8 +39,8 @@ import {
   requestUpdateAvatar,
   requestPutCard,
   requestRemoveCard,
-  toggleLoadingVisualisation,
 } from './api.js';
+import { handleSubmit } from './utils.js';
 
 let profileInfo;
 let markedCard; //помеченная карта под удаление
@@ -50,37 +50,6 @@ const setupProfileInfo = (info) => {
   profileName.textContent = info.name;
   profileDescription.textContent = info.about;
   profileAvatar.style.backgroundImage = `url("${info.avatar}")`;
-};
-
-const handleSubmit = (evt, popup, request, loadingText = 'Сохранение...') => {
-  evt.preventDefault();
-  const submitButton = evt.submitter;
-  const initialText = submitButton.textContent;
-  toggleLoadingVisualisation(true, submitButton, { loadingText: loadingText }); //смена надписи кнопки
-  request()
-    .then((formFill) => {
-      hideModal(popup, handleHide);
-      toggleLoadingVisualisation(false, submitButton, {
-        commonText: initialText,
-      });
-      if (formFill) {
-        //если был вернут объект для заполнения, то заполнить форму
-        Object.keys(formFill).forEach((key) => {
-          if (key !== 'form') {
-            formFill.form.elements[key].value = formFill[key];
-          }
-        });
-      } else {
-        evt.target.reset();
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      toggleLoadingVisualisation(false, submitButton, {
-        isError: true,
-        errorText: error,
-      }); //смена надписи на предложение повторить
-    });
 };
 
 //функции сброса и отправки формы редактирования профиля
@@ -141,18 +110,17 @@ const likeCard = (cardLikeButton, cardLikeCounter, card, userId) => {
   }
 };
 
-const removeCard = (cardElement, remove, handle, card) => {
+const removeCard = (card, remove, parameters) => {
   //данная функция вызывается при клике по корзине и помечает карточку под удаление, заодно так гарантируется, что удаляемая карточка единственная
   showModal(popupDeleteCard, handleHide);
   markedCard = {};
-  markedCard.cardElement = cardElement;
+  markedCard.parameters = parameters;
   markedCard.remove = remove;
-  markedCard.handle = handle;
   markedCard.card = card;
 };
 
 const submitDeleteCard = () => {
-  markedCard.remove(markedCard.cardElement, markedCard.handle);
+  markedCard.remove(markedCard.parameters);
   return { form: formDeleteCard };
 };
 
@@ -289,19 +257,26 @@ const initializePage = () => {
           );
           modal.activatorElement.addEventListener('click', handleModal);
         }
-          //навесить слушатель сабмита на формы        
+        //навесить слушатель сабмита на формы
         if (modal.form) {
           const submitForm = (evt) => {
-            const makeRequest = () => { //создаёт запрос на сабмит на основе промиса ответа от сервера
+            const makeRequest = () => {
+              //создаёт запрос на сабмит на основе промиса ответа от сервера
               return modal
                 .request(modal.parameters ? modal.parameters() : undefined) //для каждой формы выбирается своя функция запроса к серверу и параметры
                 .then(modal.submit);
             };
-            handleSubmit( //для каждой формы свой обработчик запроса
+            handleSubmit(
+              //для каждой формы свой обработчик запроса
               evt,
-              modal.popup,
               makeRequest,
-              modal.loading ? modal.loading : undefined //если есть кастомное сообщение загрузки, то вывести его
+              {
+                popup: modal.popup,
+                makeRequest,
+                hideModal,
+                handleHide,
+                loadingText: modal.loading ? modal.loading : undefined,
+              } //если есть кастомное сообщение загрузки, то вывести его
             );
           };
           modal.setup();

@@ -77,32 +77,3 @@ export const requestUnlikeCard = (cardId) => {
   });
 };
 
-export const toggleLoadingVisualisation = (
-  isLoading,
-  element,
-  {
-    commonText = 'Сохранить',
-    loadingText = 'Сохранение...',
-    isError = false,
-    errorText = 'ошибка',
-  }
-) => {
-  const initialValue = element.textContent;
-  if (isError) {
-    const maxlength = 30;
-    if (typeof errorText !== 'string') {
-      errorText = 'ошибка';
-    }
-    errorText = 'Повторить (' + errorText + ')';
-    if (errorText.length > maxlength) {
-      errorText = errorText.substring(0, maxlength - 5) + '...)';
-    }
-    element.textContent = errorText;
-  } else {
-    element.textContent = isLoading ? loadingText : commonText;
-  }
-  isLoading
-    ? element.setAttribute('disabled', '')
-    : element.removeAttribute('disabled');
-  return initialValue;
-};
